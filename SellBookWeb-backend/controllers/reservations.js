@@ -9,8 +9,8 @@ module.exports = {
     getAllReservations: async function (req, res) {
         try {
             // Assuming req.userId contains the authenticated user ID from checkLogin middleware
-            const userId = req.userId;
-            const reservations = await Reservation.find({ user: userId })
+            let userId = req.userId;
+            let reservations = await Reservation.find({ user: userId })
                 .populate('items.product', 'title price')
                 .sort({ createdAt: -1 });
             res.json(reservations);
@@ -22,8 +22,8 @@ module.exports = {
     // GET a specific reservation by ID for the current user
     getReservationById: async function (req, res) {
         try {
-            const userId = req.userId;
-            const reservation = await Reservation.findOne({
+            let userId = req.userId;
+            let reservation = await Reservation.findOne({
                 _id: req.params.id,
                 user: userId
             })
@@ -40,14 +40,14 @@ module.exports = {
 
     // POST reserve a cart (entire cart of the user) - with transaction
     reserveACart: async function (req, res) {
-        const session = await mongoose.startSession();
+        let session = await mongoose.startSession();
         session.startTransaction();
         
         try {
-            const userId = req.userId;
+            let userId = req.userId;
             
             // Get the user's cart
-            const cart = await Cart.findOne({ user: userId }).session(session);
+            let cart = await Cart.findOne({ user: userId }).session(session);
             if (!cart || cart.cartItems.length === 0) {
                 await session.abortTransaction();
                 session.endSession();
@@ -55,11 +55,11 @@ module.exports = {
             }
             
             // Prepare reservation items from cart
-            const reservationItems = [];
+            let reservationItems = [];
             let totalAmount = 0;
             
-            for (const cartItem of cart.cartItems) {
-                const product = await Product.findById(cartItem.product).session(session);
+            for (let cartItem of cart.cartItems) {
+                let product = await Product.findById(cartItem.product).session(session);
                 if (!product) {
                     await session.abortTransaction();
                     session.endSession();
@@ -67,7 +67,7 @@ module.exports = {
                 }
                 
                 // Check inventory stock
-                const inventory = await Inventory.findOne({ product: cartItem.product }).session(session);
+                let inventory = await Inventory.findOne({ product: cartItem.product }).session(session);
                 if (!inventory) {
                     await session.abortTransaction();
                     session.endSession();
@@ -87,7 +87,7 @@ module.exports = {
                 inventory.reserved += cartItem.quantity;
                 await inventory.save({ session });
                 
-                const subtotal = product.price * cartItem.quantity;
+                let subtotal = product.price * cartItem.quantity;
                 reservationItems.push({
                     product: cartItem.product,
                     quantity: cartItem.quantity,
@@ -100,10 +100,10 @@ module.exports = {
             }
             
             // Create reservation
-            const expiredIn = new Date();
+            let expiredIn = new Date();
             expiredIn.setHours(expiredIn.getHours() + 2); // Example: 2 hours expiry
             
-            const reservation = new Reservation({
+            let reservation = new Reservation({
                 user: userId,
                 items: reservationItems,
                 amount: totalAmount,
@@ -129,12 +129,12 @@ module.exports = {
 
     // POST reserve items from a list - with transaction
     reserveItems: async function (req, res) {
-        const session = await mongoose.startSession();
+        let session = await mongoose.startSession();
         session.startTransaction();
         
         try {
-            const userId = req.userId;
-            const { items } = req.body; // Expecting { items: [{ productId, quantity }, ...] }
+            let userId = req.userId;
+            let items = req.body.items; // Expecting { items: [{ productId, quantity }, ...] }
             
             if (!items || !Array.isArray(items) || items.length === 0) {
                 await session.abortTransaction();
@@ -143,11 +143,11 @@ module.exports = {
             }
             
             // Prepare reservation items
-            const reservationItems = [];
+            let reservationItems = [];
             let totalAmount = 0;
             
-            for (const item of items) {
-                const product = await Product.findById(item.product).session(session);
+            for (let item of items) {
+                let product = await Product.findById(item.product).session(session);
                 if (!product) {
                     await session.abortTransaction();
                     session.endSession();
@@ -155,7 +155,7 @@ module.exports = {
                 }
                 
                 // Check inventory stock
-                const inventory = await Inventory.findOne({ product: item.product }).session(session);
+                let inventory = await Inventory.findOne({ product: item.product }).session(session);
                 if (!inventory) {
                     await session.abortTransaction();
                     session.endSession();
@@ -175,7 +175,7 @@ module.exports = {
                 inventory.reserved += item.quantity;
                 await inventory.save({ session });
                 
-                const subtotal = product.price * item.quantity;
+                let subtotal = product.price * item.quantity;
                 reservationItems.push({
                     product: item.product,
                     quantity: item.quantity,
@@ -188,10 +188,10 @@ module.exports = {
             }
             
             // Create reservation
-            const expiredIn = new Date();
+            let expiredIn = new Date();
             expiredIn.setHours(expiredIn.getHours() + 2); // Example: 2 hours expiry
             
-            const reservation = new Reservation({
+            let reservation = new Reservation({
                 user: userId,
                 items: reservationItems,
                 amount: totalAmount,
@@ -213,13 +213,13 @@ module.exports = {
 
     // POST cancel a reservation - with transaction to restore inventory
     cancelReserve: async function (req, res) {
-        const session = await mongoose.startSession();
+        let session = await mongoose.startSession();
         session.startTransaction();
         
         try {
-            const userId = req.userId;
+            let userId = req.userId;
             
-            const reservation = await Reservation.findOne({
+            let reservation = await Reservation.findOne({
                 _id: req.params.id,
                 user: userId,
                 status: { $in: ['actived', 'expired'] } // Only allow cancelling active or expired
@@ -234,8 +234,8 @@ module.exports = {
             }
             
             // Update inventory: increase stock, decrease reserved
-            for (const item of reservation.items) {
-                const inventory = await Inventory.findOne({ product: item.product }).session(session);
+            for (let item of reservation.items) {
+                let inventory = await Inventory.findOne({ product: item.product }).session(session);
                 if (inventory) {
                     inventory.stock += item.quantity;
                     inventory.reserved -= item.quantity;

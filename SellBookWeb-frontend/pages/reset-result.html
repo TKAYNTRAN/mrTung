@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả đặt lại mật khẩu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .result-card {
+            width: 100%;
+            max-width: 460px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 28px;
+            text-align: center;
+        }
+
+        .icon-wrap {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            font-weight: 700;
+        }
+
+        .icon-success {
+            background: #e6fffa;
+            color: #2f855a;
+        }
+
+        .icon-failed {
+            background: #fff5f5;
+            color: #c53030;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+
+        .message {
+            color: #4a5568;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #edf2f7;
+            color: #2d3748;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="result-card">
+        <div id="successView" class="hidden">
+            <div class="icon-wrap icon-success">✓</div>
+            <h1>Đặt lại mật khẩu thành công</h1>
+            <p id="successMessage" class="message">Bạn có thể đăng nhập với mật khẩu mới ngay bây giờ.</p>
+            <div class="actions">
+                <a class="btn btn-primary" href="./login.html">Đến trang đăng nhập</a>
+            </div>
+        </div>
+
+        <div id="failedView" class="hidden">
+            <div class="icon-wrap icon-failed">!</div>
+            <h1>Đặt lại mật khẩu thất bại</h1>
+            <p id="failedMessage" class="message">Liên kết không hợp lệ hoặc đã hết hạn.</p>
+            <div class="actions">
+                <a id="retryLink" class="btn btn-primary" href="./login.html">Thử lại</a>
+                <a class="btn btn-secondary" href="./login.html">Quay lại đăng nhập</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var status = params.get('status') || 'failed';
+            var message = params.get('message') || '';
+            var token = params.get('token') || '';
+
+            var successView = document.getElementById('successView');
+            var failedView = document.getElementById('failedView');
+            var successMessage = document.getElementById('successMessage');
+            var failedMessage = document.getElementById('failedMessage');
+            var retryLink = document.getElementById('retryLink');
+
+            if (status === 'success') {
+                successView.classList.remove('hidden');
+                if (message) {
+                    successMessage.textContent = message;
+                }
+                return;
+            }
+
+            failedView.classList.remove('hidden');
+            if (message) {
+                failedMessage.textContent = message;
+            }
+            if (token) {
+                retryLink.href = './login.html?token=' + encodeURIComponent(token);
+            }
+        })();
+    </script>
+</body>
+</html>

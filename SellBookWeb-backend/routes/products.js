@@ -1,21 +1,29 @@
-var express = require('express');
+﻿var express = require('express');
 var router = express.Router();
-let productModel = require('../schemas/products')
-let InventoryModel = require('../schemas/inventories')
-let { ConvertTitleToSlug } = require('../utils/titleHandler')
-let { getMaxID } = require('../utils/IdHandler');
-const { default: mongoose } = require('mongoose');
+let productModel = require('../schemas/products');
+let inventoryModel = require('../schemas/inventories');
+let { ConvertTitleToSlug } = require('../utils/titleHandler');
+
+function mapProductResponse(product) {
+  let productObject = product.toObject();
+  return {
+    ...productObject,
+    id: productObject._id.toString(),
+  };
+}
+
+function normalizeCategoryId(categoryId) {
+  if (categoryId === 'undefined' || categoryId === '') {
+    return null;
+  }
+  return categoryId;
+}
 
 //getall
 router.get('/', async function (req, res, next) {
   try {
     let products = await productModel.find({ isDeleted: false });
-    // Add id field for frontend compatibility
-    let formattedProducts = products.map(product => ({
-      ...product.toObject(),
-      id: product._id.toString()
-    }));
-    res.send(formattedProducts)
+    res.send(products.map(mapProductResponse));
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
@@ -24,29 +32,24 @@ router.get('/', async function (req, res, next) {
 //get by ID
 router.get('/:id', async function (req, res, next) {
   try {
-    let result = await productModel.findById(req.params.id);
-    if (result) {
-      // Add id field for frontend compatibility
-      let formattedResult = {
-        ...result.toObject(),
-        id: result._id.toString()
-      };
-      res.send(formattedResult)
+    let product = await productModel.findById(req.params.id);
+    if (product) {
+      res.send(mapProductResponse(product));
     } else {
       res.status(404).send({
         message: "id not found"
-      })
+      });
     }
   } catch (error) {
     res.status(404).send({
       message: "id not found"
-    })
+    });
   }
 });
 
 router.post('/', async function (req, res, next) {
   try {
-    let newItem = new productModel({
+    let newProductInput = new productModel({
       title: req.body.title,
       slug: ConvertTitleToSlug(req.body.title),
       price: req.body.price,
@@ -54,83 +57,74 @@ router.post('/', async function (req, res, next) {
       category: req.body.category,
       author: req.body.author || "",
       quantity: req.body.quantity || 0,
-      categoryId: (req.body.categoryId && req.body.categoryId !== "undefined" && req.body.categoryId !== "") ? req.body.categoryId : null,
+      categoryId: normalizeCategoryId(req.body.categoryId),
       image: req.body.image,
       supplierName: req.body.supplierName || "",
-      coverType: req.body.coverType || "Bìa mềm",
+      coverType: req.body.coverType || "BÃ¬a má»m",
       translator: req.body.translator || "None",
       publisher: req.body.publisher || "",
       discountCode: req.body.discountCode || "None"
-    })
+    });
     
-    let newProduct = await newItem.save();
-    console.log(newProduct);
+    let createdProduct = await newProductInput.save();
     
     // Create inventory without transaction
     try {
-      let newInventory = new InventoryModel({
-        product: newProduct._id,
+      let newInventory = new inventoryModel({
+        product: createdProduct._id,
         stock: req.body.quantity || 1
-      })
+      });
       await newInventory.save();
     } catch (invError) {
       console.log('Inventory creation failed:', invError.message);
     }
     
-    // Add id field for frontend compatibility
-    let formattedProduct = {
-      ...newProduct.toObject(),
-      id: newProduct._id.toString()
-    };
-    res.send(formattedProduct);
+    res.send(mapProductResponse(createdProduct));
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
-})
+});
 
 router.put('/:id', async function (req, res, next) {
   try {
     let id = req.params.id;
+    let updateData = { ...req.body, categoryId: normalizeCategoryId(req.body.categoryId) };
     
-    // Handle categoryId undefined
-    let updateData = { ...req.body };
-    if (updateData.categoryId === "undefined" || updateData.categoryId === "") {
-      updateData.categoryId = null;
-    }
-    
-    let updatedItem = await productModel.findByIdAndUpdate(
-      id, updateData, {
+    let updatedProduct = await productModel.findByIdAndUpdate(
+      id,
+      updateData,
+      {
       new: true
-    })
-    // Add id field for frontend compatibility
-    let formattedItem = {
-      ...updatedItem.toObject(),
-      id: updatedItem._id.toString()
-    };
-    res.send(formattedItem)
+    });
+
+    if (!updatedProduct) {
+      return res.status(404).send({ message: 'id not found' });
+    }
+
+    res.send(mapProductResponse(updatedProduct));
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
-})
+});
 
 router.delete('/:id', async function (req, res, next) {
   try {
     let id = req.params.id;
-    let updatedItem = await productModel.findByIdAndUpdate(
-      id, {
-      isDeleted: true
-    }, {
-      new: true
-    })
-    // Add id field for frontend compatibility
-    let formattedItem = {
-      ...updatedItem.toObject(),
-      id: updatedItem._id.toString()
-    };
-    res.send(formattedItem)
+    let deletedProduct = await productModel.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true }
+    );
+
+    if (!deletedProduct) {
+      return res.status(404).send({ message: 'id not found' });
+    }
+
+    res.send(mapProductResponse(deletedProduct));
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
-})
+});
 
 module.exports = router;
+

@@ -1,9 +1,9 @@
-var express = require('express');
+﻿var express = require('express');
 var router = express.Router();
 let categoryModel = require('../schemas/categories')
 let { ConvertTitleToSlug } = require('../utils/titleHandler')
 let { getMaxID } = require('../utils/IdHandler');
-const { default: mongoose } = require('mongoose');
+let { default: mongoose } = require('mongoose');
 
 //getall
 router.get('/', async function (req, res, next) {
@@ -16,10 +16,12 @@ router.get('/', async function (req, res, next) {
         ]
     });
     // Add id field for frontend compatibility
-    let formattedCategories = categories.map(category => ({
-      ...category.toObject(),
-      id: category._id.toString()
-    }));
+    let formattedCategories = categories.map(function (category) {
+      return {
+        ...category.toObject(),
+        id: category._id.toString()
+      };
+    });
     res.send(formattedCategories)
   } catch (error) {
     res.status(500).send({ message: error.message });
@@ -65,7 +67,7 @@ router.post('/', async function (req, res, next) {
   } catch (error) {
     await session.abortTransaction();
     session.endSession()
-    res.send(error.message);
+    res.status(500).send({ message: error.message });
   }
 });
 

@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
-const bcrypt = require('bcrypt')
+let mongoose = require("mongoose");
+let bcrypt = require('bcrypt')
 
-const userSchema = new mongoose.Schema(
+let userSchema = new mongoose.Schema(
   {
     username: {
       type: String,
@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ['ADMIN', 'CUSTOMER'],
+      enum: ['SUPER_ADMIN', 'ADMIN', 'CUSTOMER'],
       default: 'CUSTOMER'
     },
 

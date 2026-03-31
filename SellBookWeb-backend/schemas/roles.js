@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+let mongoose = require("mongoose");
 
-const roleSchema = new mongoose.Schema(
+let roleSchema = new mongoose.Schema(
     {
         name: {
             type: String,

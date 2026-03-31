@@ -1,7 +1,7 @@
-const nodemailer = require("nodemailer");
+let nodemailer = require("nodemailer");
 
 
-const transporter = nodemailer.createTransport({
+let transporter = nodemailer.createTransport({
     host: "sandbox.smtp.mailtrap.io",
     port: 25,
     secure: false, // Use true for port 465, false for port 587
@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 
 module.exports = {
     sendMail: async function (to, url) {
-        const info = await transporter.sendMail({
+        let info = await transporter.sendMail({
             from: 'admin@heha.com',
             to: to,
             subject: "Reset Password email",

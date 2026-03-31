@@ -44,7 +44,28 @@ module.exports = {
                 return;
             }
             let userRole = getUser.role;
-            if (requiredRole.includes(userRole)) {
+            
+            // Role hierarchy: SUPER_ADMIN can access all ADMIN endpoints
+            let roleHierarchy = {
+                'CUSTOMER': 0,
+                'ADMIN': 1,
+                'SUPER_ADMIN': 2
+            };
+            
+            let hasPermission = false;
+            for (let i = 0; i < requiredRole.length; i++) {
+                if (userRole === requiredRole[i]) {
+                    hasPermission = true;
+                    break;
+                }
+                // SUPER_ADMIN can act as ADMIN
+                if (userRole === 'SUPER_ADMIN' && requiredRole[i] === 'ADMIN') {
+                    hasPermission = true;
+                    break;
+                }
+            }
+            
+            if (hasPermission) {
                 next()
             } else {
                 res.status(403).send({

@@ -1,24 +1,23 @@
-var express = require("express");
+﻿var express = require("express");
 var router = express.Router();
-let bcrypt = require('bcrypt')
 let { userPostValidation, validateResult } =
-  require('../utils/validationHandler')
-let { checkLogin, checkRole } = require('../utils/authHandler')
+  require('../utils/validationHandler');
+let { checkLogin, checkRole } = require('../utils/authHandler');
 let userModel = require('../schemas/users');
-let cartModel = require('../schemas/carts')
-let mongoose = require('mongoose')
+let cartModel = require('../schemas/carts');
+let mongoose = require('mongoose');
 
 let userController = require("../controllers/users");
 
 
 router.get("/", checkLogin, checkRole("ADMIN"), async function (req, res, next) {
   let result = await userController.getAllUser();
-  res.send(result)
+  res.send(result);
 });
 
 router.get("/:id", checkLogin, checkRole("ADMIN", "MODERATOR"), async function (req, res, next) {
   try {
-    let result = await userController.FindByID(req.params.id)
+    let result = await userController.FindByID(req.params.id);
     if (result) {
       res.send(result);
     }
@@ -33,8 +32,9 @@ router.get("/:id", checkLogin, checkRole("ADMIN", "MODERATOR"), async function (
 router.post("/", userPostValidation, validateResult,
   async function (req, res, next) {
     let session = await mongoose.startSession();
-    let transaction = session.startTransaction()
     try {
+      session.startTransaction();
+
       let newItem = await userController.CreateAnUser(
         req.body.username,
         req.body.password,
@@ -43,51 +43,55 @@ router.post("/", userPostValidation, validateResult,
         "", "",
         false,
         session
-      )
+      );
+
       let newCart = new cartModel({
         user: newItem._id
-      })
-      newCart = await newCart.save({ session })
-      await newCart.populate('user')
-      session.commitTransaction()
-      session.endSession()
-      res.send(newCart)
+      });
+
+      let result = await newCart.save({ session });
+      await result.populate('user');
+
+      await session.commitTransaction();
+      res.send(result);
     } catch (err) {
-      session.abortTransaction();
-      session.endSession()
+      await session.abortTransaction();
       res.status(400).send({ message: err.message });
+    } finally {
+      session.endSession();
     }
   });
 
 router.put("/:id", async function (req, res, next) {
   try {
-    let id = req.params.id;
-    let updatedItem = await userModel.findOne({ _id: id, isDeleted: false })
-    if (!updatedItem) return res.status(404).send({ message: "id not found" });
-    let keys = Object.keys(req.body);
-    for (const key of keys) {
-      updatedItem[key] = req.body[key];
+    let userId = req.params.id;
+    let result = await userModel.findOne({ _id: userId, isDeleted: false });
+    if (!result) return res.status(404).send({ message: "id not found" });
+
+    let updateKeys = Object.keys(req.body);
+    for (let key of updateKeys) {
+      result[key] = req.body[key];
     }
-    await updatedItem.save();
-    let populated = await userModel
-      .findById(updatedItem._id)
-    res.send(populated);
+
+    await result.save();
+    let updatedItem = await userModel.findById(result._id);
+    res.send(updatedItem);
   } catch (err) {
     res.status(400).send({ message: err.message });
   }
 });
 router.delete("/:id", async function (req, res, next) {
   try {
-    let id = req.params.id;
-    let updatedItem = await userModel.findByIdAndUpdate(
-      id,
+    let userId = req.params.id;
+    let deletedItem = await userModel.findByIdAndUpdate(
+      userId,
       { isDeleted: true },
       { new: true }
     );
-    if (!updatedItem) {
+    if (!deletedItem) {
       return res.status(404).send({ message: "id not found" });
     }
-    res.send(updatedItem);
+    res.send(deletedItem);
   } catch (err) {
     res.status(400).send({ message: err.message });
   }
