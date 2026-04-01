@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const User = require('./models/User');
 const Category = require('./models/Category');
 const Book = require('./models/Book');
+const Coupon = require('./models/Coupon');
 
 require('dotenv').config();
 
@@ -15,6 +16,7 @@ const seedData = async () => {
         await User.deleteMany({});
         await Category.deleteMany({});
         await Book.deleteMany({});
+        await Coupon.deleteMany({});
         console.log('Cleared existing data');
 
         const adminUser = await User.create({
@@ -110,6 +112,16 @@ const seedData = async () => {
             }
         ]);
         console.log(`Created ${books.length} books`);
+
+        await Coupon.create({
+            code: 'SALE10',
+            description: 'Mã demo — giảm 10% trên phần đủ điều kiện',
+            discountPercent: 10,
+            active: true,
+            scope: 'ALL',
+            bookIds: []
+        });
+        console.log('Sample coupon: SALE10 (10%, tất cả sách)');
 
         console.log('\n✅ Seed completed!');
         console.log('Admin account: admin@bookstore.com / admin123');

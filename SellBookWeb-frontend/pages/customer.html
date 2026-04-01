@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/customer-styles.css">
 </head>
-<body>
+<body class="app-layout">
     <nav class="navbar">
         <div class="nav-brand">📚 SellBookWeb</div>
         <div class="nav-links">
@@ -43,22 +43,62 @@
         </section>
 
         <section id="profile-section" class="section">
-            <h2>Hồ sơ cá nhân</h2>
-            <form id="profileForm" onsubmit="updateProfile(event)">
-                <div class="form-group">
-                    <label>Tên:</label>
-                    <input type="text" id="profileName" required>
+            <div class="profile-page">
+                <h2 class="profile-page-title">Hồ sơ cá nhân</h2>
+
+                <div class="profile-card profile-card--hero">
+                    <div class="profile-hero-inner">
+                        <div id="profileAvatar" class="profile-avatar" aria-hidden="true"></div>
+                        <div class="profile-hero-text">
+                            <p class="profile-welcome">Xin chào,</p>
+                            <h3 id="profileDisplayName" class="profile-display-name">—</h3>
+                            <span id="profileRoleBadge" class="profile-role-badge role-customer">CUSTOMER</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Email:</label>
-                    <input type="email" id="profileEmail" disabled>
+
+                <div class="profile-card">
+                    <h3 class="profile-card-title">Thông tin tài khoản</h3>
+                    <dl class="profile-dl">
+                        <div class="profile-dl-row">
+                            <dt>Email</dt>
+                            <dd id="profileEmailDisplay">—</dd>
+                        </div>
+                        <div class="profile-dl-row">
+                            <dt>Số điện thoại</dt>
+                            <dd id="profilePhoneDisplay">—</dd>
+                        </div>
+                        <div class="profile-dl-row">
+                            <dt>Ngày tham gia</dt>
+                            <dd id="profileCreatedAt">—</dd>
+                        </div>
+                        <div class="profile-dl-row">
+                            <dt>Trạng thái</dt>
+                            <dd id="profileStatusWrap"><span id="profileStatus" class="profile-status-pill">—</span></dd>
+                        </div>
+                    </dl>
                 </div>
-                <div class="form-group">
-                    <label>Điện thoại:</label>
-                    <input type="tel" id="profilePhone">
+
+                <div class="profile-card">
+                    <h3 class="profile-card-title">Cập nhật thông tin</h3>
+                    <p class="profile-card-hint">Chỉnh sửa tên và số điện thoại. Email không đổi tại đây.</p>
+                    <form id="profileForm" onsubmit="updateProfile(event)" class="profile-form">
+                        <div class="form-group">
+                            <label for="profileName">Họ và tên</label>
+                            <input type="text" id="profileName" required autocomplete="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="profileEmail">Email</label>
+                            <input type="email" id="profileEmail" disabled autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="profilePhone">Điện thoại</label>
+                            <input type="tel" id="profilePhone" placeholder="10 chữ số (tuỳ chọn)" maxlength="10" autocomplete="tel">
+                        </div>
+                        <button type="submit" class="submit-btn profile-save-btn">Lưu thay đổi</button>
+                    </form>
                 </div>
-                <button type="submit" class="submit-btn">Cập nhật</button>
-            </form>
+            </div>
         </section>
     </main>
 

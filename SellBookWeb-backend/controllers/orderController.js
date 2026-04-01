@@ -1,6 +1,13 @@
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Book = require('../models/Book');
+const Coupon = require('../models/Coupon');
+const {
+    isCouponActiveNow,
+    computeCouponDiscountAmount
+} = require('../utils/couponDiscount');
+
+const normalizeCouponCode = (code) => (code || '').trim().toUpperCase();
 
 const orderController = {
     getAll: async (req, res) => {
@@ -75,9 +82,9 @@ const orderController = {
 
     create: async (req, res) => {
         try {
-            const { items, shippingAddress, phone, paymentMethod } = req.body;
+            const { items, shippingAddress, phone, paymentMethod, couponCode } = req.body;
 
-            let totalPrice = 0;
+            let subtotal = 0;
             const orderItems = [];
 
             for (const item of items) {
@@ -100,17 +107,46 @@ const orderController = {
                     quantity: item.quantity
                 });
 
-                totalPrice += price * item.quantity;
+                subtotal += price * item.quantity;
 
                 book.quantity -= item.quantity;
                 book.salesCount += item.quantity;
                 await book.save();
             }
 
+            let couponDiscount = 0;
+            let appliedCouponCode = '';
+
+            if (couponCode && String(couponCode).trim()) {
+                const code = normalizeCouponCode(couponCode);
+                const coupon = await Coupon.findOne({ code });
+                if (!coupon) {
+                    return res.status(400).json({ message: 'Invalid coupon code' });
+                }
+                if (!isCouponActiveNow(coupon)) {
+                    return res.status(400).json({ message: 'Coupon is not valid at this time' });
+                }
+                const pricedForCoupon = orderItems.map((oi) => ({
+                    bookId: oi.bookId,
+                    price: oi.price,
+                    quantity: oi.quantity
+                }));
+                const { eligibleSubtotal, discount } = computeCouponDiscountAmount(coupon, pricedForCoupon);
+                if (eligibleSubtotal <= 0) {
+                    return res.status(400).json({ message: 'Coupon does not apply to items in this order' });
+                }
+                couponDiscount = discount;
+                appliedCouponCode = coupon.code;
+            }
+
+            const totalPrice = Math.max(0, subtotal - couponDiscount);
+
             const order = new Order({
                 userId: req.userId,
                 items: orderItems,
                 totalPrice,
+                couponCode: appliedCouponCode,
+                couponDiscount,
                 shippingAddress,
                 phone,
                 paymentMethod: paymentMethod || 'COD',

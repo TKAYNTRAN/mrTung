@@ -1,5 +1,32 @@
 /* Customer & Admin Styles */
 
+:root {
+    --color-primary: #667eea;
+    --color-primary-dark: #5a67d8;
+    --color-accent: #764ba2;
+    --color-surface: #ffffff;
+    --color-muted: #64748b;
+    --color-border: #e2e8f0;
+    --color-bg-soft: #f7fafc;
+    --color-tint: #f0f4ff;
+    --gradient-brand: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --radius-lg: 12px;
+}
+
+/* Trang app (khách, admin, checkout) — không dùng layout flex như trang đăng nhập */
+body.app-layout {
+    display: block;
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #eef2ff 0%, #f8fafc 42%, #f1f5f9 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body.app-layout .main-content {
+    background: transparent;
+}
+
 .navbar {
     background: white;
     padding: 1rem 2rem;
@@ -17,7 +44,7 @@
 .nav-brand {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #667eea;
+    color: var(--color-primary);
 }
 
 .nav-links {
@@ -34,14 +61,14 @@
 
 .nav-links a:hover,
 .nav-links a.active {
-    color: #667eea;
+    color: var(--color-primary);
 }
 
 .main-content {
     margin-top: 80px;
     padding: 2rem;
     min-height: calc(100vh - 80px);
-    background: #f7fafc;
+    background: transparent;
 }
 
 .section {
@@ -103,7 +130,7 @@
 .book-price {
     font-size: 1.2rem;
     font-weight: 700;
-    color: #667eea;
+    color: var(--color-primary);
     margin-bottom: 1rem;
 }
 
@@ -158,7 +185,7 @@
 }
 
 .data-table th {
-    background: #667eea;
+    background: var(--gradient-brand);
     color: white;
     font-weight: 600;
 }
@@ -342,4 +369,192 @@
 .empty-state h3 {
     margin-bottom: 1rem;
     color: #333;
+}
+
+/* ========== Hồ sơ cá nhân (tone giống checkout) ========== */
+.profile-page {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.profile-page-title {
+    color: var(--color-primary);
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+}
+
+.profile-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.profile-card--hero {
+    padding: 0;
+    overflow: hidden;
+    border: none;
+    background: var(--gradient-brand);
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.35);
+}
+
+.profile-hero-inner {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.75rem 1.5rem;
+}
+
+.profile-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22);
+    border: 3px solid rgba(255, 255, 255, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-welcome {
+    font-size: 0.9rem;
+    opacity: 0.92;
+    margin-bottom: 0.15rem;
+}
+
+.profile-display-name {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: 0.02em;
+}
+
+.profile-role-badge {
+    display: inline-block;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.profile-role-badge.role-admin {
+    background: rgba(254, 243, 199, 0.95);
+    color: #92400e;
+    border-color: rgba(251, 191, 36, 0.6);
+}
+
+.profile-role-badge.role-customer {
+    background: rgba(219, 234, 254, 0.95);
+    color: #1e40af;
+    border-color: rgba(147, 197, 253, 0.7);
+}
+
+.profile-card-title {
+    color: var(--color-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+}
+
+.profile-card-hint {
+    color: var(--color-muted);
+    font-size: 0.88rem;
+    margin: -0.35rem 0 1.1rem 0;
+    line-height: 1.45;
+}
+
+.profile-dl {
+    margin: 0;
+}
+
+.profile-dl-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--color-border);
+    align-items: baseline;
+}
+
+.profile-dl-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.profile-dl-row dt {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.profile-dl-row dd {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #1e293b;
+    word-break: break-word;
+}
+
+.profile-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.profile-status-pill.is-active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.profile-status-pill.is-inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.profile-form .form-group label {
+    color: #334155;
+}
+
+.profile-form .form-group input:disabled {
+    background: var(--color-bg-soft);
+    color: var(--color-muted);
+    cursor: not-allowed;
+}
+
+.profile-form .form-group input:not(:disabled) {
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.profile-form .form-group input:not(:disabled):focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.profile-save-btn {
+    max-width: 220px;
+    border-radius: 8px;
 }

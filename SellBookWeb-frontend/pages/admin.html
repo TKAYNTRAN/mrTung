@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/customer-styles.css">
 </head>
-<body>
+<body class="app-layout">
     <nav class="navbar">
         <div class="nav-brand">📚 SellBookWeb - Admin</div>
         <div class="nav-links">
@@ -16,6 +16,7 @@
             <a href="#" onclick="showSection('categories')">Danh mục</a>
             <a href="#" onclick="showSection('orders')">Đơn hàng</a>
             <a href="#" onclick="showSection('users')">Người dùng</a>
+            <a href="#" onclick="showSection('coupons')">Mã giảm giá</a>
             <a href="#" onclick="logout()">Đăng xuất</a>
         </div>
     </nav>
@@ -114,6 +115,28 @@
                             <th>Tên</th>
                             <th>Email</th>
                             <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="coupons-section" class="section">
+            <div class="section-header">
+                <h2>Mã giảm giá (Coupon)</h2>
+                <button class="submit-btn" onclick="openCouponModal()">Thêm mã</button>
+            </div>
+            <div class="data-table">
+                <table id="couponsTable">
+                    <thead>
+                        <tr>
+                            <th>Mã</th>
+                            <th>Giảm %</th>
+                            <th>Phạm vi</th>
+                            <th>Hiệu lực</th>
                             <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>

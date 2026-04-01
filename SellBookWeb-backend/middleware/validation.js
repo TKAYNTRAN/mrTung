@@ -87,6 +87,10 @@ const orderValidation = {
         body('phone')
             .matches(/^[0-9]{10}$/)
             .withMessage('Phone must be 10 digits'),
+        body('couponCode')
+            .optional({ values: 'falsy' })
+            .isString()
+            .trim(),
         handleValidationErrors
     ]
 };

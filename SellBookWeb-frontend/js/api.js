@@ -88,10 +88,21 @@ const ordersAPI = {
 const usersAPI = {
     getAll: () => apiCall('/users'),
     getById: (id) => apiCall(`/users/${id}`),
+    getProfile: () => apiCall('/users/profile'),
     create: (data) => apiCall('/users', 'POST', data),
     update: (id, data) => apiCall(`/users/${id}`, 'PUT', data),
     delete: (id) => apiCall(`/users/${id}`, 'DELETE'),
     updateProfile: (data) => apiCall('/users/profile', 'PUT', data)
+};
+
+const couponsAPI = {
+    getAll: () => apiCall('/coupons'),
+    getById: (id) => apiCall(`/coupons/${id}`),
+    create: (data) => apiCall('/coupons', 'POST', data),
+    update: (id, data) => apiCall(`/coupons/${id}`, 'PUT', data),
+    delete: (id) => apiCall(`/coupons/${id}`, 'DELETE'),
+    validate: (data) => apiCall('/coupons/validate', 'POST', data),
+    availableForCart: (data) => apiCall('/coupons/available-for-cart', 'POST', data)
 };
 
 const reviewsAPI = {
