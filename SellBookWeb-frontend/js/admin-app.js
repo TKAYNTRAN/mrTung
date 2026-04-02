@@ -26,6 +26,7 @@ function showSection(sectionId) {
     if (sectionId === 'categories') loadAdminCategories();
     if (sectionId === 'orders') loadAdminOrders();
     if (sectionId === 'users') loadAdminUsers();
+    if (sectionId === 'coupons') loadAdminCoupons();
 }
 
 async function loadDashboard() {
@@ -436,6 +437,244 @@ async function updateCategory(event, id) {
 
 function editUser(id) {
     showToast('Tính năng đang phát triển');
+}
+
+function formatCouponScope(scope) {
+    const map = {
+        ALL: 'Tất cả sách',
+        ONLY_BOOKS: 'Chỉ sách chọn',
+        EXCEPT_BOOKS: 'Trừ sách chọn'
+    };
+    return map[scope] || scope;
+}
+
+function formatCouponValidity(c) {
+    if (!c.validFrom && !c.validTo) return 'Không giới hạn';
+    const from = c.validFrom ? new Date(c.validFrom).toLocaleDateString('vi-VN') : '…';
+    const to = c.validTo ? new Date(c.validTo).toLocaleDateString('vi-VN') : '…';
+    return `${from} → ${to}`;
+}
+
+async function loadAdminCoupons() {
+    try {
+        const coupons = await couponsAPI.getAll();
+        const tbody = document.querySelector('#couponsTable tbody');
+        if (!coupons || coupons.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Chưa có mã giảm giá</td></tr>';
+            return;
+        }
+        tbody.innerHTML = coupons.map((c) => `
+            <tr>
+                <td><strong>${c.code}</strong></td>
+                <td>${c.discountPercent}%</td>
+                <td>${formatCouponScope(c.scope)}${c.scope !== 'ALL' && c.bookIds?.length ? ` (${c.bookIds.length} sách)` : ''}</td>
+                <td>${formatCouponValidity(c)}</td>
+                <td><span class="badge ${c.active ? 'badge-active' : 'badge-inactive'}">${c.active ? 'Bật' : 'Tắt'}</span></td>
+                <td>
+                    <button class="btn-edit" onclick="editCoupon('${c._id}')">Sửa</button>
+                    <button class="btn-delete" onclick="deleteCoupon('${c._id}')">Xóa</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
+}
+
+async function deleteCoupon(id) {
+    if (!confirm('Xóa mã giảm giá này?')) return;
+    try {
+        await couponsAPI.delete(id);
+        showToast('Đã xóa mã');
+        loadAdminCoupons();
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
+}
+
+function toggleCouponBookSelect() {
+    const scope = document.getElementById('couponScope').value;
+    const wrap = document.getElementById('couponBookIdsWrap');
+    if (wrap) wrap.style.display = scope === 'ALL' ? 'none' : 'block';
+}
+
+async function openCouponModal() {
+    const data = await booksAPI.getAll(0, 500);
+    const books = data.books || [];
+    const bookOpts = books.map((b) => `<option value="${b._id}">${b.title}</option>`).join('');
+    document.getElementById('modalBody').innerHTML = `
+        <h2>Thêm mã giảm giá</h2>
+        <form onsubmit="saveCoupon(event)">
+            <div class="form-group">
+                <label>Mã (code):</label>
+                <input type="text" id="couponCode" required placeholder="VD: SALE10">
+            </div>
+            <div class="form-group">
+                <label>Mô tả:</label>
+                <input type="text" id="couponDesc" placeholder="Ghi chú nội bộ">
+            </div>
+            <div class="form-group">
+                <label>Giảm %:</label>
+                <input type="number" id="couponPercent" required min="0" max="100" step="1" value="10">
+            </div>
+            <div class="form-group">
+                <label>Phạm vi áp dụng:</label>
+                <select id="couponScope" onchange="toggleCouponBookSelect()">
+                    <option value="ALL">Tất cả sách</option>
+                    <option value="ONLY_BOOKS">Chỉ các sách được chọn</option>
+                    <option value="EXCEPT_BOOKS">Trừ các sách được chọn</option>
+                </select>
+            </div>
+            <div class="form-group" id="couponBookIdsWrap" style="display:none">
+                <label>Chọn sách (Ctrl+Click để chọn nhiều):</label>
+                <select id="couponBookIds" multiple size="8" style="width:100%">${bookOpts}</select>
+            </div>
+            <div class="form-group">
+                <label><input type="checkbox" id="couponActive" checked> Kích hoạt</label>
+            </div>
+            <div class="form-group">
+                <label>Có hiệu từ (tuỳ chọn):</label>
+                <input type="datetime-local" id="couponValidFrom">
+            </div>
+            <div class="form-group">
+                <label>Hết hạn (tuỳ chọn):</label>
+                <input type="datetime-local" id="couponValidTo">
+            </div>
+            <button type="submit" class="submit-btn">Lưu</button>
+        </form>
+    `;
+    document.getElementById('modal').classList.add('show');
+}
+
+async function saveCoupon(event) {
+    event.preventDefault();
+    const scope = document.getElementById('couponScope').value;
+    const sel = document.getElementById('couponBookIds');
+    const bookIds = scope === 'ALL' ? [] : Array.from(sel.selectedOptions).map((o) => o.value);
+    if (scope !== 'ALL' && bookIds.length === 0) {
+        showToast('Vui lòng chọn ít nhất một sách', 'error');
+        return;
+    }
+    const vf = document.getElementById('couponValidFrom').value;
+    const vt = document.getElementById('couponValidTo').value;
+    const data = {
+        code: document.getElementById('couponCode').value,
+        description: document.getElementById('couponDesc').value,
+        discountPercent: parseFloat(document.getElementById('couponPercent').value),
+        active: document.getElementById('couponActive').checked,
+        scope,
+        bookIds,
+        validFrom: vf ? new Date(vf).toISOString() : null,
+        validTo: vt ? new Date(vt).toISOString() : null
+    };
+    try {
+        await couponsAPI.create(data);
+        showToast('Đã tạo mã');
+        closeModal();
+        loadAdminCoupons();
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
+}
+
+function toDatetimeLocalValue(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+async function editCoupon(id) {
+    try {
+        const c = await couponsAPI.getById(id);
+        const data = await booksAPI.getAll(0, 500);
+        const books = data.books || [];
+        const selected = new Set((c.bookIds || []).map((x) => x.toString()));
+        const bookOpts = books.map((b) =>
+            `<option value="${b._id}" ${selected.has(b._id.toString()) ? 'selected' : ''}>${b.title}</option>`
+        ).join('');
+        document.getElementById('modalBody').innerHTML = `
+            <h2>Sửa mã giảm giá</h2>
+            <form onsubmit="updateCoupon(event, '${id}')">
+                <div class="form-group">
+                    <label>Mã (code):</label>
+                    <input type="text" id="editCouponCode" required value="${c.code}">
+                </div>
+                <div class="form-group">
+                    <label>Mô tả:</label>
+                    <input type="text" id="editCouponDesc" value="${(c.description || '').replace(/"/g, '&quot;')}">
+                </div>
+                <div class="form-group">
+                    <label>Giảm %:</label>
+                    <input type="number" id="editCouponPercent" required min="0" max="100" value="${c.discountPercent}">
+                </div>
+                <div class="form-group">
+                    <label>Phạm vi:</label>
+                    <select id="editCouponScope" onchange="toggleEditCouponBookSelect()">
+                        <option value="ALL" ${c.scope === 'ALL' ? 'selected' : ''}>Tất cả sách</option>
+                        <option value="ONLY_BOOKS" ${c.scope === 'ONLY_BOOKS' ? 'selected' : ''}>Chỉ các sách được chọn</option>
+                        <option value="EXCEPT_BOOKS" ${c.scope === 'EXCEPT_BOOKS' ? 'selected' : ''}>Trừ các sách được chọn</option>
+                    </select>
+                </div>
+                <div class="form-group" id="editCouponBookIdsWrap" style="display:${c.scope === 'ALL' ? 'none' : 'block'}">
+                    <label>Chọn sách:</label>
+                    <select id="editCouponBookIds" multiple size="8" style="width:100%">${bookOpts}</select>
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="editCouponActive" ${c.active ? 'checked' : ''}> Kích hoạt</label>
+                </div>
+                <div class="form-group">
+                    <label>Có hiệu từ:</label>
+                    <input type="datetime-local" id="editCouponValidFrom" value="${toDatetimeLocalValue(c.validFrom)}">
+                </div>
+                <div class="form-group">
+                    <label>Hết hạn:</label>
+                    <input type="datetime-local" id="editCouponValidTo" value="${toDatetimeLocalValue(c.validTo)}">
+                </div>
+                <button type="submit" class="submit-btn">Cập nhật</button>
+            </form>
+        `;
+        document.getElementById('modal').classList.add('show');
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
+}
+
+function toggleEditCouponBookSelect() {
+    const scope = document.getElementById('editCouponScope').value;
+    const wrap = document.getElementById('editCouponBookIdsWrap');
+    if (wrap) wrap.style.display = scope === 'ALL' ? 'none' : 'block';
+}
+
+async function updateCoupon(event, id) {
+    event.preventDefault();
+    const scope = document.getElementById('editCouponScope').value;
+    const sel = document.getElementById('editCouponBookIds');
+    const bookIds = scope === 'ALL' ? [] : Array.from(sel.selectedOptions).map((o) => o.value);
+    if (scope !== 'ALL' && bookIds.length === 0) {
+        showToast('Vui lòng chọn ít nhất một sách', 'error');
+        return;
+    }
+    const vf = document.getElementById('editCouponValidFrom').value;
+    const vt = document.getElementById('editCouponValidTo').value;
+    const data = {
+        code: document.getElementById('editCouponCode').value,
+        description: document.getElementById('editCouponDesc').value,
+        discountPercent: parseFloat(document.getElementById('editCouponPercent').value),
+        active: document.getElementById('editCouponActive').checked,
+        scope,
+        bookIds,
+        validFrom: vf ? new Date(vf).toISOString() : null,
+        validTo: vt ? new Date(vt).toISOString() : null
+    };
+    try {
+        await couponsAPI.update(id, data);
+        showToast('Đã cập nhật mã');
+        closeModal();
+        loadAdminCoupons();
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
