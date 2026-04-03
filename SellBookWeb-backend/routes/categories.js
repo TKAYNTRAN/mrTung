@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 let categoryController = require('../controllers/categories');
-let { checkAuth, checkAdmin } = require('../utils/authHandler');
+let { checkLogin, checkAdmin } = require('../utils/authHandler');
 
 router.get('/', async function (req, res, next) {
     try {
@@ -12,7 +12,7 @@ router.get('/', async function (req, res, next) {
     }
 });
 
-router.get('/admin/all', checkAuth, checkAdmin, async function (req, res, next) {
+router.get('/admin/all', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let categories = await categoryController.getAllAdmin();
         res.json(categories);
@@ -33,7 +33,7 @@ router.get('/:id', async function (req, res, next) {
     }
 });
 
-router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.post('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let category = await categoryController.create(req.body);
         res.status(201).json(category);
@@ -42,7 +42,7 @@ router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.put('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.put('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let category = await categoryController.update(req.params.id, req.body);
         if (!category) {
@@ -54,7 +54,7 @@ router.put('/:id', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.delete('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.delete('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let category = await categoryController.delete(req.params.id);
         if (!category) {

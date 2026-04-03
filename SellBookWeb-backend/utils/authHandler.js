@@ -58,10 +58,6 @@ module.exports = {
         };
     },
 
-    checkAuth: function (req, res, next) {
-        module.exports.checkLogin(req, res, next);
-    },
-
     checkAdmin: function (req, res, next) {
         module.exports.checkRole('ADMIN', 'SUPER_ADMIN')(req, res, next);
     }

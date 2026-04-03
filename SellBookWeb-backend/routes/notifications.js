@@ -1,9 +1,9 @@
 let express = require('express');
 let router = express.Router();
 let notificationController = require('../controllers/notifications');
-let { checkAuth, checkAdmin } = require('../utils/authHandler');
+let { checkLogin, checkAdmin } = require('../utils/authHandler');
 
-router.get('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.get('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let { page = 0, size = 10, userId, read } = req.query;
         let result = await notificationController.getAll(page, size, userId, read);
@@ -13,7 +13,7 @@ router.get('/', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.get('/my-notifications', checkAuth, async function (req, res, next) {
+router.get('/my-notifications', checkLogin, async function (req, res, next) {
     try {
         let { page = 0, size = 10, read } = req.query;
         let result = await notificationController.getMyNotifications(req.userId, page, size, read);
@@ -23,7 +23,7 @@ router.get('/my-notifications', checkAuth, async function (req, res, next) {
     }
 });
 
-router.get('/:id', checkAuth, async function (req, res, next) {
+router.get('/:id', checkLogin, async function (req, res, next) {
     try {
         let notification = await notificationController.getById(req.params.id);
         if (!notification) {
@@ -35,7 +35,7 @@ router.get('/:id', checkAuth, async function (req, res, next) {
     }
 });
 
-router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.post('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let notification = await notificationController.create(req.body);
         res.status(201).json(notification);
@@ -44,7 +44,7 @@ router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.put('/:id/read', checkAuth, async function (req, res, next) {
+router.put('/:id/read', checkLogin, async function (req, res, next) {
     try {
         let notification = await notificationController.markAsRead(req.params.id);
         if (!notification) {
@@ -56,7 +56,7 @@ router.put('/:id/read', checkAuth, async function (req, res, next) {
     }
 });
 
-router.put('/mark-all-read', checkAuth, async function (req, res, next) {
+router.put('/mark-all-read', checkLogin, async function (req, res, next) {
     try {
         let result = await notificationController.markAllAsRead(req.userId);
         res.json(result);
@@ -65,7 +65,7 @@ router.put('/mark-all-read', checkAuth, async function (req, res, next) {
     }
 });
 
-router.delete('/:id', checkAuth, async function (req, res, next) {
+router.delete('/:id', checkLogin, async function (req, res, next) {
     try {
         let notification = await notificationController.delete(req.params.id);
         if (!notification) {
@@ -77,7 +77,7 @@ router.delete('/:id', checkAuth, async function (req, res, next) {
     }
 });
 
-router.delete('/read/all', checkAuth, async function (req, res, next) {
+router.delete('/read/all', checkLogin, async function (req, res, next) {
     try {
         let result = await notificationController.deleteAllRead(req.userId);
         res.json(result);

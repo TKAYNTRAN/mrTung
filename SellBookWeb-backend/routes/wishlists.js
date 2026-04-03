@@ -1,9 +1,9 @@
 let express = require('express');
 let router = express.Router();
 let wishlistController = require('../controllers/wishlists');
-let { checkAuth } = require('../utils/authHandler');
+let { checkLogin } = require('../utils/authHandler');
 
-router.get('/', checkAuth, async function (req, res, next) {
+router.get('/', checkLogin, async function (req, res, next) {
     try {
         let wishlist = await wishlistController.getMyWishlist(req.userId);
         res.json(wishlist);
@@ -12,7 +12,7 @@ router.get('/', checkAuth, async function (req, res, next) {
     }
 });
 
-router.get('/check/:bookId', checkAuth, async function (req, res, next) {
+router.get('/check/:bookId', checkLogin, async function (req, res, next) {
     try {
         let result = await wishlistController.checkInWishlist(req.userId, req.params.bookId);
         res.json(result);
@@ -21,7 +21,7 @@ router.get('/check/:bookId', checkAuth, async function (req, res, next) {
     }
 });
 
-router.post('/', checkAuth, async function (req, res, next) {
+router.post('/', checkLogin, async function (req, res, next) {
     try {
         let { bookId } = req.body;
         let wishlist = await wishlistController.addToWishlist(req.userId, bookId);
@@ -37,7 +37,7 @@ router.post('/', checkAuth, async function (req, res, next) {
     }
 });
 
-router.delete('/:bookId', checkAuth, async function (req, res, next) {
+router.delete('/:bookId', checkLogin, async function (req, res, next) {
     try {
         let wishlist = await wishlistController.removeFromWishlist(req.userId, req.params.bookId);
         res.json(wishlist);
@@ -49,7 +49,7 @@ router.delete('/:bookId', checkAuth, async function (req, res, next) {
     }
 });
 
-router.delete('/', checkAuth, async function (req, res, next) {
+router.delete('/', checkLogin, async function (req, res, next) {
     try {
         let result = await wishlistController.clearWishlist(req.userId);
         res.json(result);

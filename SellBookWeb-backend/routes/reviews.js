@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 let reviewController = require('../controllers/reviews');
-let { checkAuth, checkAdmin } = require('../utils/authHandler');
+let { checkLogin, checkAdmin } = require('../utils/authHandler');
 
 router.get('/book/:bookId', async function (req, res, next) {
     try {
@@ -12,7 +12,7 @@ router.get('/book/:bookId', async function (req, res, next) {
     }
 });
 
-router.get('/user/:userId', checkAuth, async function (req, res, next) {
+router.get('/user/:userId', checkLogin, async function (req, res, next) {
     try {
         let reviews = await reviewController.getByUser(req.params.userId);
         res.json(reviews);
@@ -21,7 +21,7 @@ router.get('/user/:userId', checkAuth, async function (req, res, next) {
     }
 });
 
-router.post('/', checkAuth, async function (req, res, next) {
+router.post('/', checkLogin, async function (req, res, next) {
     try {
         let { bookId, rating, comment } = req.body;
         let result = await reviewController.create(req.userId, req.user.name, bookId, rating, comment);
@@ -37,7 +37,7 @@ router.post('/', checkAuth, async function (req, res, next) {
     }
 });
 
-router.delete('/:id', checkAuth, async function (req, res, next) {
+router.delete('/:id', checkLogin, async function (req, res, next) {
     try {
         let review = await Review.findById(req.params.id);
         if (!review) {
@@ -54,7 +54,7 @@ router.delete('/:id', checkAuth, async function (req, res, next) {
     }
 });
 
-router.get('/admin/pending', checkAuth, checkAdmin, async function (req, res, next) {
+router.get('/admin/pending', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let reviews = await reviewController.getPending();
         res.json(reviews);
@@ -63,7 +63,7 @@ router.get('/admin/pending', checkAuth, checkAdmin, async function (req, res, ne
     }
 });
 
-router.put('/:id/approve', checkAuth, checkAdmin, async function (req, res, next) {
+router.put('/:id/approve', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let result = await reviewController.approve(req.params.id);
         res.json(result);

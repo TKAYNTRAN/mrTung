@@ -1,9 +1,9 @@
 let express = require('express');
 let router = express.Router();
 let supplierController = require('../controllers/suppliers');
-let { checkAuth, checkAdmin } = require('../utils/authHandler');
+let { checkLogin, checkAdmin } = require('../utils/authHandler');
 
-router.get('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.get('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let { page = 0, size = 10, active, search } = req.query;
         let result = await supplierController.getAll(page, size, active, search);
@@ -13,7 +13,7 @@ router.get('/', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.get('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.get('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let supplier = await supplierController.getById(req.params.id);
         if (!supplier) {
@@ -25,7 +25,7 @@ router.get('/:id', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.post('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let supplier = await supplierController.create(req.body);
         res.status(201).json(supplier);
@@ -34,7 +34,7 @@ router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.put('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.put('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let supplier = await supplierController.update(req.params.id, req.body);
         if (!supplier) {
@@ -46,7 +46,7 @@ router.put('/:id', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.put('/:id/toggle-active', checkAuth, checkAdmin, async function (req, res, next) {
+router.put('/:id/toggle-active', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let supplier = await supplierController.toggleActive(req.params.id);
         res.json(supplier);
@@ -58,7 +58,7 @@ router.put('/:id/toggle-active', checkAuth, checkAdmin, async function (req, res
     }
 });
 
-router.delete('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.delete('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let supplier = await supplierController.delete(req.params.id);
         if (!supplier) {

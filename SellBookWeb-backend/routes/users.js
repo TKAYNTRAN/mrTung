@@ -1,9 +1,9 @@
 let express = require('express');
 let router = express.Router();
 let userController = require('../controllers/users');
-let { checkAuth, checkAdmin } = require('../utils/authHandler');
+let { checkLogin, checkAdmin } = require('../utils/authHandler');
 
-router.get('/profile', checkAuth, async function (req, res, next) {
+router.get('/profile', checkLogin, async function (req, res, next) {
     try {
         const user = await userController.getById(req.userId);
         if (!user) {
@@ -15,7 +15,7 @@ router.get('/profile', checkAuth, async function (req, res, next) {
     }
 });
 
-router.put('/profile', checkAuth, async function (req, res, next) {
+router.put('/profile', checkLogin, async function (req, res, next) {
     try {
         const { name, phone, avatar } = req.body;
         const user = await userController.updateProfile(req.userId, name, phone, avatar);
@@ -28,7 +28,7 @@ router.put('/profile', checkAuth, async function (req, res, next) {
     }
 });
 
-router.get('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.get('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         const users = await userController.getAll();
         res.json(users);
@@ -37,7 +37,7 @@ router.get('/', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.get('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.get('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         const user = await userController.getById(req.params.id);
         if (!user) {
@@ -49,7 +49,7 @@ router.get('/:id', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.post('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         const { name, email, password, phone, role, active } = req.body;
         const user = await userController.create(name, email, password, phone, role, active);
@@ -62,7 +62,7 @@ router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.put('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.put('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         const user = await userController.update(req.params.id, req.body);
         if (!user) {
@@ -74,7 +74,7 @@ router.put('/:id', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.delete('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.delete('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         const user = await userController.delete(req.params.id);
         if (!user) {

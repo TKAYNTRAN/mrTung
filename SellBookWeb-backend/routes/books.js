@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 let bookController = require('../controllers/books');
-let { checkAuth, checkAdmin } = require('../utils/authHandler');
+let { checkLogin, checkAdmin } = require('../utils/authHandler');
 
 router.get('/', async function (req, res, next) {
     try {
@@ -44,7 +44,7 @@ router.get('/:id', async function (req, res, next) {
     }
 });
 
-router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.post('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let book = await bookController.create(req.body);
         res.status(201).json(book);
@@ -53,7 +53,7 @@ router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.put('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.put('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let book = await bookController.update(req.params.id, req.body);
         if (!book) {
@@ -65,7 +65,7 @@ router.put('/:id', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.delete('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.delete('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let book = await bookController.delete(req.params.id);
         if (!book) {

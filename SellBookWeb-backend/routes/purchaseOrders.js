@@ -1,9 +1,9 @@
 let express = require('express');
 let router = express.Router();
 let purchaseOrderController = require('../controllers/purchaseOrders');
-let { checkAuth, checkAdmin } = require('../utils/authHandler');
+let { checkLogin, checkAdmin } = require('../utils/authHandler');
 
-router.get('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.get('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let { page = 0, size = 10, status, supplierId } = req.query;
         let result = await purchaseOrderController.getAll(page, size, status, supplierId);
@@ -13,7 +13,7 @@ router.get('/', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.get('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.get('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let purchaseOrder = await purchaseOrderController.getById(req.params.id);
         if (!purchaseOrder) {
@@ -25,7 +25,7 @@ router.get('/:id', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.post('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let { supplierId, items, expectedDate, notes } = req.body;
         let purchaseOrder = await purchaseOrderController.create(supplierId, items, expectedDate, notes);
@@ -35,7 +35,7 @@ router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.put('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.put('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let purchaseOrder = await purchaseOrderController.update(req.params.id, req.body);
         if (!purchaseOrder) {
@@ -47,7 +47,7 @@ router.put('/:id', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.put('/:id/receive', checkAuth, checkAdmin, async function (req, res, next) {
+router.put('/:id/receive', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let purchaseOrder = await purchaseOrderController.receiveOrder(req.params.id);
         res.json(purchaseOrder);
@@ -62,7 +62,7 @@ router.put('/:id/receive', checkAuth, checkAdmin, async function (req, res, next
     }
 });
 
-router.put('/:id/cancel', checkAuth, checkAdmin, async function (req, res, next) {
+router.put('/:id/cancel', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let purchaseOrder = await purchaseOrderController.cancelOrder(req.params.id);
         res.json(purchaseOrder);
@@ -77,7 +77,7 @@ router.put('/:id/cancel', checkAuth, checkAdmin, async function (req, res, next)
     }
 });
 
-router.delete('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.delete('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let result = await purchaseOrderController.delete(req.params.id);
         res.json(result);

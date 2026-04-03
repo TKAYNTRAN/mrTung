@@ -1,9 +1,9 @@
 let express = require('express');
 let router = express.Router();
 let cartController = require('../controllers/carts');
-let { checkAuth } = require('../utils/authHandler');
+let { checkLogin } = require('../utils/authHandler');
 
-router.get('/', checkAuth, async function (req, res, next) {
+router.get('/', checkLogin, async function (req, res, next) {
     try {
         let cart = await cartController.getMyCart(req.userId);
         res.json(cart);
@@ -12,7 +12,7 @@ router.get('/', checkAuth, async function (req, res, next) {
     }
 });
 
-router.post('/items', checkAuth, async function (req, res, next) {
+router.post('/items', checkLogin, async function (req, res, next) {
     try {
         let { bookId, quantity } = req.body;
         let result = await cartController.addItem(req.userId, bookId, quantity);
@@ -28,7 +28,7 @@ router.post('/items', checkAuth, async function (req, res, next) {
     }
 });
 
-router.put('/items/:bookId', checkAuth, async function (req, res, next) {
+router.put('/items/:bookId', checkLogin, async function (req, res, next) {
     try {
         let { quantity } = req.body;
         let result = await cartController.updateItem(req.userId, req.params.bookId, quantity);
@@ -41,7 +41,7 @@ router.put('/items/:bookId', checkAuth, async function (req, res, next) {
     }
 });
 
-router.delete('/items/:bookId', checkAuth, async function (req, res, next) {
+router.delete('/items/:bookId', checkLogin, async function (req, res, next) {
     try {
         let result = await cartController.removeItem(req.userId, req.params.bookId);
         res.json(result);
@@ -53,7 +53,7 @@ router.delete('/items/:bookId', checkAuth, async function (req, res, next) {
     }
 });
 
-router.delete('/', checkAuth, async function (req, res, next) {
+router.delete('/', checkLogin, async function (req, res, next) {
     try {
         let result = await cartController.clearCart(req.userId);
         res.json(result);

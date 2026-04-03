@@ -1,9 +1,9 @@
 let express = require('express');
 let router = express.Router();
 let couponController = require('../controllers/coupons');
-let { checkAuth, checkAdmin } = require('../utils/authHandler');
+let { checkLogin, checkAdmin } = require('../utils/authHandler');
 
-router.get('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.get('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let { page = 0, size = 10, active, search } = req.query;
         let result = await couponController.getAll(page, size, active, search);
@@ -35,7 +35,7 @@ router.post('/available-for-cart', async function (req, res, next) {
     }
 });
 
-router.get('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.get('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let coupon = await couponController.getById(req.params.id);
         if (!coupon) {
@@ -47,7 +47,7 @@ router.get('/:id', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.post('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.post('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let coupon = await couponController.create(req.body);
         res.status(201).json(coupon);
@@ -66,7 +66,7 @@ router.post('/validate', async function (req, res, next) {
     }
 });
 
-router.put('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.put('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let coupon = await couponController.update(req.params.id, req.body);
         if (!coupon) {
@@ -78,7 +78,7 @@ router.put('/:id', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.delete('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.delete('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let coupon = await couponController.delete(req.params.id);
         if (!coupon) {

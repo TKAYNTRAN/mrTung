@@ -1,9 +1,9 @@
 let express = require('express');
 let router = express.Router();
 let paymentController = require('../controllers/payments');
-let { checkAuth, checkAdmin } = require('../utils/authHandler');
+let { checkLogin, checkAdmin } = require('../utils/authHandler');
 
-router.get('/', checkAuth, checkAdmin, async function (req, res, next) {
+router.get('/', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let { page = 0, size = 10, status, orderId } = req.query;
         let result = await paymentController.getAll(page, size, status, orderId);
@@ -13,7 +13,7 @@ router.get('/', checkAuth, checkAdmin, async function (req, res, next) {
     }
 });
 
-router.get('/order/:orderId', checkAuth, async function (req, res, next) {
+router.get('/order/:orderId', checkLogin, async function (req, res, next) {
     try {
         let payments = await paymentController.getByOrderId(req.params.orderId);
         res.json(payments);
@@ -22,7 +22,7 @@ router.get('/order/:orderId', checkAuth, async function (req, res, next) {
     }
 });
 
-router.get('/:id', checkAuth, async function (req, res, next) {
+router.get('/:id', checkLogin, async function (req, res, next) {
     try {
         let payment = await paymentController.getById(req.params.id);
         if (!payment) {
@@ -34,7 +34,7 @@ router.get('/:id', checkAuth, async function (req, res, next) {
     }
 });
 
-router.post('/', checkAuth, async function (req, res, next) {
+router.post('/', checkLogin, async function (req, res, next) {
     try {
         let payment = await paymentController.create(req.body);
         res.status(201).json(payment);
@@ -43,7 +43,7 @@ router.post('/', checkAuth, async function (req, res, next) {
     }
 });
 
-router.put('/:id/status', checkAuth, checkAdmin, async function (req, res, next) {
+router.put('/:id/status', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let { paymentStatus, transactionId } = req.body;
         let payment = await paymentController.updateStatus(req.params.id, paymentStatus, transactionId);
@@ -56,7 +56,7 @@ router.put('/:id/status', checkAuth, checkAdmin, async function (req, res, next)
     }
 });
 
-router.put('/:id/refund', checkAuth, checkAdmin, async function (req, res, next) {
+router.put('/:id/refund', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let payment = await paymentController.processRefund(req.params.id);
         if (!payment) {
@@ -68,7 +68,7 @@ router.put('/:id/refund', checkAuth, checkAdmin, async function (req, res, next)
     }
 });
 
-router.delete('/:id', checkAuth, checkAdmin, async function (req, res, next) {
+router.delete('/:id', checkLogin, checkAdmin, async function (req, res, next) {
     try {
         let payment = await paymentController.delete(req.params.id);
         if (!payment) {
