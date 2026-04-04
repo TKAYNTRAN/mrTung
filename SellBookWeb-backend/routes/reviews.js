@@ -1,6 +1,8 @@
 let express = require('express');
 let router = express.Router();
 let reviewController = require('../controllers/reviews');
+let Review = require('../models/Review');
+let usersController = require('../controllers/users');
 let { checkAuth, checkAdmin } = require('../utils/authHandler');
 
 router.get('/book/:bookId', async function (req, res, next) {
@@ -24,7 +26,11 @@ router.get('/user/:userId', checkAuth, async function (req, res, next) {
 router.post('/', checkAuth, async function (req, res, next) {
     try {
         let { bookId, rating, comment } = req.body;
-        let result = await reviewController.create(req.userId, req.user.name, bookId, rating, comment);
+        let user = await usersController.getById(req.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        let result = await reviewController.create(req.userId, user.name, bookId, rating, comment);
         res.status(201).json(result);
     } catch (error) {
         if (error.message === 'Book not found') {
@@ -43,8 +49,12 @@ router.delete('/:id', checkAuth, async function (req, res, next) {
         if (!review) {
             return res.status(404).json({ message: 'Review not found' });
         }
+        let user = await usersController.getById(req.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
         if (review.userId.toString() !== req.userId.toString() &&
-            req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+            user.role !== 'ADMIN') {
             return res.status(403).json({ message: 'Not authorized' });
         }
         let result = await reviewController.delete(req.params.id);

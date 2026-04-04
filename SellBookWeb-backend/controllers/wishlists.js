@@ -25,7 +25,8 @@ module.exports = {
         if (!wishlist) {
             wishlist = new Wishlist({ userId, bookIds: [bookId] });
         } else {
-            if (wishlist.bookIds.includes(bookId)) {
+            let exists = wishlist.bookIds.some((id) => id.toString() === bookId.toString());
+            if (exists) {
                 throw new Error('Book already in wishlist');
             }
             wishlist.bookIds.push(bookId);
@@ -43,7 +44,7 @@ module.exports = {
             throw new Error('Wishlist not found');
         }
 
-        let index = wishlist.bookIds.indexOf(bookId);
+        let index = wishlist.bookIds.findIndex((id) => id.toString() === bookId.toString());
         if (index === -1) {
             throw new Error('Book not found in wishlist');
         }
@@ -69,7 +70,9 @@ module.exports = {
 
     checkInWishlist: async function (userId, bookId) {
         let wishlist = await Wishlist.findOne({ userId });
-        let isInWishlist = wishlist ? wishlist.bookIds.includes(bookId) : false;
+        let isInWishlist = wishlist
+            ? wishlist.bookIds.some((id) => id.toString() === bookId.toString())
+            : false;
         return { isInWishlist };
     }
 };

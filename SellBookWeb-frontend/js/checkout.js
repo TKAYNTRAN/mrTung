@@ -86,7 +86,10 @@ async function loadCouponOptions() {
             }))
         };
         const data = await couponsAPI.availableForCart(payload);
-        availableCoupons = data.coupons || [];
+        availableCoupons = (data.coupons || []).filter((c) => {
+            const hasEligibleBooks = Number(c.eligibleBookCount || 0) > 0;
+            return hasEligibleBooks && Number(c.couponDiscount || 0) > 0;
+        });
 
         loading.style.display = 'none';
         wrap.style.display = 'flex';
@@ -113,9 +116,12 @@ async function loadCouponOptions() {
             btn.className = 'coupon-btn';
             btn.dataset.code = c.code;
             const desc = c.description ? escapeHtml(c.description) : `Giảm ${c.discountPercent}%`;
+            const appliesText = Number(c.eligibleBookCount || 0) > 0
+                ? `Áp dụng cho ${c.eligibleBookCount} sách trong giỏ`
+                : 'Không có sách phù hợp';
             btn.innerHTML =
                 `<div class="code">${escapeHtml(c.code)}</div>` +
-                `<div class="meta">${desc} · Tiết kiệm ${formatPrice(c.couponDiscount)}</div>`;
+                `<div class="meta">${desc} · ${appliesText} · Tiết kiệm ${formatPrice(c.couponDiscount)}</div>`;
             btn.addEventListener('click', () => selectCouponCode(c.code));
             wrap.appendChild(btn);
         });

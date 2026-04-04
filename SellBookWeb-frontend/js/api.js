@@ -17,14 +17,22 @@ async function apiCall(endpoint, method = 'GET', data = null) {
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
 
-        if (response.status === 401) {
+        let errorData = null;
+        if (!response.ok) {
+            errorData = await response.json().catch(() => ({}));
+        }
+
+        const authMessages = ['Authentication required', 'Token expired'];
+        if (
+            response.status === 401 ||
+            (response.status === 403 && authMessages.includes(errorData?.message))
+        ) {
             auth.logout();
             throw new Error('Phiên đăng nhập đã hết hạn');
         }
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `Error: ${response.statusText}`);
+            throw new Error(errorData?.message || `Error: ${response.statusText}`);
         }
 
         const contentType = response.headers.get('content-type');
@@ -149,4 +157,46 @@ const banksAPI = {
     },
     delete: (id) => apiCall(`/banks/${id}`, 'DELETE'),
     toggleActive: (id) => apiCall(`/banks/${id}/toggle-active`, 'PUT')
+};
+
+const wishlistAPI = {
+    getMyWishlist: () => apiCall('/wishlists'),
+    check: (bookId) => apiCall(`/wishlists/check/${bookId}`),
+    add: (bookId) => apiCall('/wishlists', 'POST', { bookId }),
+    remove: (bookId) => apiCall(`/wishlists/${bookId}`, 'DELETE'),
+    clear: () => apiCall('/wishlists', 'DELETE')
+};
+
+const suppliersAPI = {
+    getAll: (page = 0, size = 100, active = '', search = '') => {
+        let url = `/suppliers?page=${page}&size=${size}`;
+        if (active !== '' && active !== undefined && active !== null) url += `&active=${active}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        return apiCall(url);
+    },
+    getById: (id) => apiCall(`/suppliers/${id}`),
+    create: (data) => apiCall('/suppliers', 'POST', data),
+    update: (id, data) => apiCall(`/suppliers/${id}`, 'PUT', data),
+    delete: (id) => apiCall(`/suppliers/${id}`, 'DELETE'),
+    toggleActive: (id) => apiCall(`/suppliers/${id}/toggle-active`, 'PUT')
+};
+
+const purchaseOrdersAPI = {
+    getAll: (page = 0, size = 100, status = '', supplierId = '') => {
+        let url = `/purchase-orders?page=${page}&size=${size}`;
+        if (status) url += `&status=${status}`;
+        if (supplierId) url += `&supplierId=${supplierId}`;
+        return apiCall(url);
+    },
+    getById: (id) => apiCall(`/purchase-orders/${id}`),
+    create: (data) => apiCall('/purchase-orders', 'POST', data),
+    update: (id, data) => apiCall(`/purchase-orders/${id}`, 'PUT', data),
+    receive: (id) => apiCall(`/purchase-orders/${id}/receive`, 'PUT'),
+    cancel: (id) => apiCall(`/purchase-orders/${id}/cancel`, 'PUT'),
+    delete: (id) => apiCall(`/purchase-orders/${id}`, 'DELETE')
+};
+
+const adminReviewsAPI = {
+    getPending: () => apiCall('/reviews/admin/pending'),
+    approve: (id) => apiCall(`/reviews/${id}/approve`, 'PUT')
 };

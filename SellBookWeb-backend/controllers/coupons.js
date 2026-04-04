@@ -3,7 +3,9 @@ let Book = require('../models/Book');
 
 function toIdStr(id) {
     if (!id) return '';
-    return id.toString ? id.toString() : String(id);
+    if (id._id) return id._id.toString();
+    if (id.toString) return id.toString();
+    return String(id);
 }
 
 function isBookEligible(bookId, coupon) {
@@ -24,6 +26,16 @@ function eligibleSubtotal(lines, coupon) {
         }
     }
     return e;
+}
+
+function eligibleLineCount(lines, coupon) {
+    let count = 0;
+    for (let line of lines) {
+        if (isBookEligible(line.bookId, coupon)) {
+            count += 1;
+        }
+    }
+    return count;
 }
 
 function computeDiscountAmount(coupon, eligible) {
@@ -56,6 +68,22 @@ function normalizePayload(body) {
         data.bookIds = [data.bookIds];
     }
     return data;
+}
+
+function assertDateRange(data, currentCoupon) {
+    const hasStartDate = Object.prototype.hasOwnProperty.call(data, 'startDate');
+    const hasEndDate = Object.prototype.hasOwnProperty.call(data, 'endDate');
+
+    const startDate = hasStartDate ? data.startDate : (currentCoupon ? currentCoupon.startDate : null);
+    const endDate = hasEndDate ? data.endDate : (currentCoupon ? currentCoupon.endDate : null);
+
+    if (!startDate || !endDate) {
+        return;
+    }
+
+    if (startDate > endDate) {
+        throw new Error('Start date cannot be later than end date');
+    }
 }
 
 function formatCouponDoc(doc) {
@@ -151,6 +179,7 @@ module.exports = {
 
     create: async function (couponData) {
         let data = normalizePayload(couponData);
+        assertDateRange(data, null);
         if (data.scope !== 'ALL' && (!data.bookIds || data.bookIds.length === 0)) {
             throw new Error('Please select at least one book for this scope');
         }
@@ -161,6 +190,8 @@ module.exports = {
 
     update: async function (id, couponData) {
         let data = normalizePayload(couponData);
+        let currentCoupon = await Coupon.findById(id).select('startDate endDate');
+        assertDateRange(data, currentCoupon);
         let scope = data.scope;
         if (scope !== undefined && scope !== 'ALL' && (!data.bookIds || data.bookIds.length === 0)) {
             throw new Error('Please select at least one book for this scope');
@@ -197,6 +228,7 @@ module.exports = {
 
         let query = { active: true };
         let list = await Coupon.find(query)
+            .populate('bookIds', '_id')
             .sort({ createdAt: -1 })
             .limit(50);
 
@@ -208,6 +240,9 @@ module.exports = {
             } catch (e) {
                 continue;
             }
+            let eligibleCount = eligibleLineCount(lines, coupon);
+            if (eligibleCount <= 0) continue;
+
             let eligible = eligibleSubtotal(lines, coupon);
             if (eligible <= 0) continue;
 
@@ -220,6 +255,7 @@ module.exports = {
                 description: fc.description,
                 discountPercent: fc.discountType === 'PERCENTAGE' ? fc.discountValue : 0,
                 scope: fc.scope,
+                eligibleBookCount: eligibleCount,
                 couponDiscount: discount,
                 subtotal,
                 totalPrice: Math.max(0, subtotal - discount)

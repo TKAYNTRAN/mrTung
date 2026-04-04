@@ -137,11 +137,18 @@ module.exports = {
     },
 
     updateStatus: async function (id, status) {
-        let order = await Order.findByIdAndUpdate(
-            id,
-            { status },
-            { new: true, runValidators: true }
-        );
+        let order = await Order.findById(id);
+        if (!order) {
+            return { message: 'Order not found', order: null };
+        }
+
+        const lockedStatuses = ['CANCELLED', 'DELIVERED'];
+        if (lockedStatuses.includes(order.status)) {
+            throw new Error('Cannot change status for cancelled or delivered orders');
+        }
+
+        order.status = status;
+        await order.save();
         return { message: 'Order status updated', order };
     },
 

@@ -94,6 +94,9 @@ router.put('/:id/status', checkLogin, checkAdmin, async function (req, res, next
         }
         res.json(result);
     } catch (error) {
+        if (error.message === 'Cannot change status for cancelled or delivered orders') {
+            return res.status(400).json({ message: 'Đơn hàng đã ở trạng thái cuối (Hủy/Đã giao), không thể cập nhật.' });
+        }
         res.status(500).json({ message: error.message });
     }
 });

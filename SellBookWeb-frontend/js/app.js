@@ -1,16 +1,35 @@
 let currentPage = 0;
 let currentCategory = '';
 let currentSearch = '';
+let lastWishlistSync = localStorage.getItem('wishlistUpdatedAt') || '0';
+
+function getActiveSectionId() {
+    const active = document.querySelector('.section.active');
+    return active ? active.id.replace('-section', '') : '';
+}
+
+function refreshWishlistIfChanged() {
+    const updatedAt = localStorage.getItem('wishlistUpdatedAt') || '0';
+    if (updatedAt !== lastWishlistSync) {
+        lastWishlistSync = updatedAt;
+        if (getActiveSectionId() === 'wishlist') {
+            loadWishlist();
+        }
+    }
+}
 
 function showSection(sectionId) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.getElementById(`${sectionId}-section`).classList.add('active');
-    
+
     document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-    event.target.classList.add('active');
+    if (typeof event !== 'undefined' && event.target) {
+        event.target.classList.add('active');
+    }
 
     if (sectionId === 'books') loadBooks();
     if (sectionId === 'cart') loadCart();
+    if (sectionId === 'wishlist') loadWishlist();
     if (sectionId === 'orders') loadMyOrders();
     if (sectionId === 'profile') loadProfile();
 }
@@ -26,14 +45,14 @@ async function loadBooks() {
         }
 
         grid.innerHTML = data.books.map(book => `
-            <div class="book-card">
+            <div class="book-card" onclick="viewBookDetail('${book._id}')" style="cursor:pointer;">
                 <img src="${book.image || 'https://via.placeholder.com/250x250?text=No+Image'}" alt="${book.title}" class="book-image">
                 <div class="book-info">
                     <div class="book-title">${book.title}</div>
                     <div class="book-author">${book.author}</div>
                     <div class="book-price">${formatPrice(book.price)}</div>
                     <div class="book-actions">
-                        <button class="submit-btn btn-sm" onclick="addToCart('${book._id}')">Thêm vào giỏ</button>
+                        <button class="submit-btn btn-sm" onclick="event.stopPropagation(); addToCart('${book._id}')">Thêm vào giỏ</button>
                     </div>
                 </div>
             </div>
@@ -135,6 +154,59 @@ async function loadCart() {
         `;
         
         updateCartCount();
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
+}
+
+async function loadWishlist() {
+    try {
+        const wishlist = await wishlistAPI.getMyWishlist();
+        const container = document.getElementById('wishlistContent');
+        const books = wishlist.bookIds || [];
+
+        if (!books.length) {
+            container.innerHTML = '<div class="empty-state"><h3>Danh sách yêu thích đang trống</h3></div>';
+            return;
+        }
+
+        container.innerHTML = books.map(book => `
+            <div class="cart-item">
+                <img src="${book.image || 'https://via.placeholder.com/80x80?text=No+Image'}" alt="${book.title}">
+                <div class="cart-item-info">
+                    <div class="cart-item-title">${book.title}</div>
+                    <div class="book-author">${book.author || ''}</div>
+                    <div class="cart-item-price">${formatPrice(book.price)}</div>
+                </div>
+                <button class="btn-edit" onclick="viewBookDetail('${book._id}')">Xem</button>
+                <button class="btn-delete" onclick="removeWishlistItem('${book._id}')">Xóa</button>
+            </div>
+        `).join('');
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
+}
+
+function viewBookDetail(bookId) {
+    window.location.href = `book-detail.html?id=${bookId}`;
+}
+
+async function removeWishlistItem(bookId) {
+    try {
+        await wishlistAPI.remove(bookId);
+        showToast('Đã xóa sách khỏi danh sách yêu thích');
+        loadWishlist();
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
+}
+
+async function clearWishlist() {
+    if (!confirm('Bạn có chắc muốn xóa toàn bộ danh sách yêu thích?')) return;
+    try {
+        await wishlistAPI.clear();
+        showToast('Đã xóa toàn bộ danh sách yêu thích');
+        loadWishlist();
     } catch (error) {
         showToast(error.message, 'error');
     }
@@ -326,7 +398,7 @@ function setProfileRoleBadge(el, role) {
     el.textContent = r;
     el.className =
         'profile-role-badge ' +
-        (r === 'ADMIN' || r === 'SUPER_ADMIN' ? 'role-admin' : 'role-customer');
+        (r === 'ADMIN' ? 'role-admin' : 'role-customer');
 }
 
 function renderProfileAvatar(container, name, avatarUrl) {
@@ -459,4 +531,19 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCategories();
     loadBooks();
     updateCartCount();
+
+    const activeSection = sessionStorage.getItem('activeSection');
+    if (activeSection && ['books', 'cart', 'wishlist', 'orders', 'profile'].includes(activeSection)) {
+        sessionStorage.removeItem('activeSection');
+        showSection(activeSection);
+    }
+
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'wishlistUpdatedAt') {
+            refreshWishlistIfChanged();
+        }
+    });
+
+    window.addEventListener('focus', refreshWishlistIfChanged);
+    window.addEventListener('pageshow', refreshWishlistIfChanged);
 });

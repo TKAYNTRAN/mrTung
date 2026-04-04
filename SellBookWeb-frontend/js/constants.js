@@ -30,8 +30,7 @@ const API_CONFIG = {
 
 const USER_ROLES = {
     CUSTOMER: 'CUSTOMER',
-    ADMIN: 'ADMIN',
-    SUPER_ADMIN: 'SUPER_ADMIN'
+    ADMIN: 'ADMIN'
 };
 
 const ORDER_STATUS = {

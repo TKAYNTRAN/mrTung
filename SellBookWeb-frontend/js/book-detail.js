@@ -148,9 +148,9 @@ async function addToCartFromDetail() {
 
 async function checkWishlistStatus() {
     if (!currentBookId) return;
-    
+
     try {
-        const response = await apiCall(`/wishlists/check/${currentBookId}`);
+        const response = await wishlistAPI.check(currentBookId);
         const btn = document.getElementById('wishlistBtn');
         if (response.isInWishlist) {
             btn.classList.add('active');
@@ -166,17 +166,41 @@ async function checkWishlistStatus() {
 
 async function toggleWishlist() {
     if (!currentBookId) return;
-    
+
     try {
         const btn = document.getElementById('wishlistBtn');
         if (btn.classList.contains('active')) {
-            await apiCall(`/wishlists/${currentBookId}`, 'DELETE');
+            await wishlistAPI.remove(currentBookId);
             showToast('Đã xóa khỏi danh sách yêu thích');
         } else {
-            await apiCall('/wishlists', 'POST', { bookId: currentBookId });
+            await wishlistAPI.add(currentBookId);
             showToast('Đã thêm vào danh sách yêu thích');
         }
+        localStorage.setItem('wishlistUpdatedAt', String(Date.now()));
         checkWishlistStatus();
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
+}
+
+async function submitReview(event) {
+    event.preventDefault();
+
+    if (!currentBookId) return;
+
+    const rating = parseInt(document.getElementById('reviewRating').value);
+    const comment = document.getElementById('reviewComment').value.trim();
+
+    if (!rating || rating < 1 || rating > 5) {
+        showToast('Vui lòng chọn điểm đánh giá hợp lệ', 'error');
+        return;
+    }
+
+    try {
+        await reviewsAPI.create({ bookId: currentBookId, rating, comment });
+        showToast('Đã gửi đánh giá, chờ quản trị viên duyệt');
+        document.getElementById('reviewForm').reset();
+        await loadReviews(currentBookId);
     } catch (error) {
         showToast(error.message, 'error');
     }

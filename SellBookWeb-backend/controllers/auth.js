@@ -7,7 +7,7 @@ const generateToken = (userId) => {
 };
 
 module.exports = {
-    register: async function (name, email, password, phone, role) {
+    register: async function (name, email, password, phone) {
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             throw new Error('Email already registered');
@@ -18,7 +18,7 @@ module.exports = {
             email,
             password,
             phone: phone || '',
-            role: role || 'CUSTOMER',
+            role: 'CUSTOMER',
             active: true
         });
 
@@ -46,14 +46,13 @@ module.exports = {
         }
 
         if (!user.active) {
-            throw new Error('Account is deactivated');
+            throw new Error('Account is banned');
         }
 
         const isMatch = user.comparePassword(password);
         if (!isMatch) {
             throw new Error('Invalid email or password');
         }
-
         const token = generateToken(user._id);
 
         return {

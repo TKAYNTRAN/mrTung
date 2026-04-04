@@ -14,6 +14,7 @@
         <div class="nav-links">
             <a href="customer.html">Sách</a>
             <a href="customer.html#cart" onclick="goToSection('cart')">Giỏ hàng (<span id="cartCount">0</span>)</a>
+            <a href="customer.html#wishlist" onclick="goToSection('wishlist')">Yêu thích</a>
             <a href="customer.html#orders" onclick="goToSection('orders')">Đơn hàng</a>
             <a href="customer.html#profile" onclick="goToSection('profile')">Hồ sơ</a>
             <a href="#" onclick="logout()">Đăng xuất</a>
@@ -80,6 +81,24 @@
 
                 <div class="book-detail-reviews">
                     <h3>Đánh giá sản phẩm</h3>
+                    <form id="reviewForm" onsubmit="submitReview(event)" style="margin-bottom: 1.25rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:1rem;">
+                        <div class="form-group" style="margin-bottom:0.75rem;">
+                            <label for="reviewRating">Điểm đánh giá</label>
+                            <select id="reviewRating" required>
+                                <option value="">Chọn điểm</option>
+                                <option value="5">5 - Rất tốt</option>
+                                <option value="4">4 - Tốt</option>
+                                <option value="3">3 - Trung bình</option>
+                                <option value="2">2 - Kém</option>
+                                <option value="1">1 - Rất tệ</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0.75rem;">
+                            <label for="reviewComment">Nhận xét</label>
+                            <textarea id="reviewComment" rows="3" placeholder="Chia sẻ trải nghiệm của bạn về cuốn sách này..."></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">Gửi đánh giá</button>
+                    </form>
                     <div id="reviewsList">
                         <div class="empty-state">
                             <p>Chưa có đánh giá nào</p>

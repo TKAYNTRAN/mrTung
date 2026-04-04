@@ -5,8 +5,8 @@ let { checkLogin } = require('../utils/authHandler');
 
 router.post('/register', async function (req, res, next) {
     try {
-        const { name, email, password, phone, role } = req.body;
-        const result = await authController.register(name, email, password, phone, role);
+        const { name, email, password, phone } = req.body;
+        const result = await authController.register(name, email, password, phone);
         res.status(201).json(result);
     } catch (error) {
         if (error.message === 'Email already registered') {
@@ -22,7 +22,7 @@ router.post('/login', async function (req, res, next) {
         const result = await authController.login(email, password);
         res.json(result);
     } catch (error) {
-        if (error.message === 'Invalid email or password' || error.message === 'Account is deactivated') {
+        if (error.message === 'Invalid email or password' || error.message === 'Account is banned') {
             return res.status(401).json({ message: error.message });
         }
         res.status(500).json({ message: error.message });

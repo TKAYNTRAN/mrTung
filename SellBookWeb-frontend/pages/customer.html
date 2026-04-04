@@ -13,6 +13,7 @@
         <div class="nav-links">
             <a href="#" class="active" onclick="showSection('books')">Sách</a>
             <a href="#" onclick="showSection('cart')">Giỏ hàng (<span id="cartCount">0</span>)</a>
+            <a href="#" onclick="showSection('wishlist')">Yêu thích</a>
             <a href="#" onclick="showSection('orders')">Đơn hàng</a>
             <a href="#" onclick="showSection('profile')">Hồ sơ</a>
             <a href="#" onclick="logout()">Đăng xuất</a>
@@ -35,6 +36,14 @@
         <section id="cart-section" class="section">
             <h2>Giỏ hàng của bạn</h2>
             <div id="cartContent"></div>
+        </section>
+
+        <section id="wishlist-section" class="section">
+            <div class="section-header">
+                <h2>Danh sách yêu thích</h2>
+                <button class="btn-delete" onclick="clearWishlist()">Xóa tất cả</button>
+            </div>
+            <div id="wishlistContent"></div>
         </section>
 
         <section id="orders-section" class="section">

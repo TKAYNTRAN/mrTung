@@ -18,6 +18,9 @@
             <a href="#" onclick="showSection('users')">Người dùng</a>
             <a href="#" onclick="showSection('coupons')">Mã giảm giá</a>
             <a href="#" onclick="showSection('banks')">Ngân hàng</a>
+            <a href="#" onclick="showSection('suppliers')">Nhà cung cấp</a>
+            <a href="#" onclick="showSection('purchaseOrders')">Phiếu nhập</a>
+            <a href="#" onclick="showSection('reviews')">Duyệt đánh giá</a>
             <a href="#" onclick="logout()">Đăng xuất</a>
         </div>
     </nav>
@@ -161,6 +164,70 @@
                             <th>Người thụ hưởng</th>
                             <th>Logo</th>
                             <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="suppliers-section" class="section">
+            <div class="section-header">
+                <h2>Quản lý nhà cung cấp</h2>
+                <button class="submit-btn" onclick="openSupplierModal()">Thêm nhà cung cấp</button>
+            </div>
+            <div class="data-table">
+                <table id="suppliersTable">
+                    <thead>
+                        <tr>
+                            <th>Tên</th>
+                            <th>Email</th>
+                            <th>Điện thoại</th>
+                            <th>Người liên hệ</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="purchaseOrders-section" class="section">
+            <div class="section-header">
+                <h2>Quản lý phiếu nhập</h2>
+                <button class="submit-btn" onclick="openPurchaseOrderModal()">Tạo phiếu nhập</button>
+            </div>
+            <div class="data-table">
+                <table id="purchaseOrdersTable">
+                    <thead>
+                        <tr>
+                            <th>Mã phiếu</th>
+                            <th>Nhà cung cấp</th>
+                            <th>Số mặt hàng</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="reviews-section" class="section">
+            <h2>Duyệt đánh giá sản phẩm</h2>
+            <div class="data-table">
+                <table id="reviewsTable">
+                    <thead>
+                        <tr>
+                            <th>Sách</th>
+                            <th>Người dùng</th>
+                            <th>Điểm</th>
+                            <th>Nội dung</th>
+                            <th>Ngày tạo</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>

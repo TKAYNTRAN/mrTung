@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="../css/customer-styles.css">
     <style>
         .checkout-container {
-            max-width: 800px;
+            max-width: 920px;
             margin: 100px auto;
             background: white;
             padding: 2rem;
@@ -24,19 +24,33 @@
             font-size: 1.2rem;
         }
         .cart-summary {
-            background: #f7fafc;
-            padding: 1rem;
-            border-radius: 8px;
+            background: linear-gradient(180deg, #f8faff 0%, #f2f6ff 100%);
+            padding: 1.15rem;
+            border-radius: 12px;
+            border: 1px solid #e5ebff;
             margin-bottom: 1rem;
         }
         .cart-item {
             display: flex;
             justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #e2e8f0;
+            align-items: center;
+            padding: 0.95rem 0.9rem;
+            border-bottom: 1px solid #e9edf6;
+            background: #ffffff;
+            border-radius: 12px;
+            margin-bottom: 0.6rem;
+            box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
         }
         .cart-item:last-child {
             border-bottom: none;
+            margin-bottom: 0;
+        }
+        .cart-item strong {
+            font-size: 1.05rem;
+            color: #1e293b;
+        }
+        .cart-item div[style*="x"] {
+            color: #64748b !important;
         }
         .payment-methods {
             display: flex;
@@ -142,43 +156,63 @@
             margin-top: 1rem;
         }
         .coupon-buttons-wrap {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 0.75rem;
             align-items: stretch;
         }
         .coupon-btn {
-            border: 2px solid #e2e8f0;
+            border: 1px solid #d6e0f5;
             background: #fff;
-            border-radius: 10px;
-            padding: 0.65rem 1rem;
+            border-radius: 14px;
+            padding: 0.9rem 1rem;
             cursor: pointer;
             text-align: left;
-            transition: border-color 0.2s, background 0.2s;
-            min-width: 140px;
-            flex: 1 1 auto;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
+            min-width: 0;
+            min-height: 92px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .coupon-btn:hover {
             border-color: #667eea;
             background: #f8f9ff;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(102, 126, 234, 0.14);
         }
         .coupon-btn.selected {
-            border-color: #667eea;
-            background: #f0f4ff;
-            box-shadow: 0 0 0 1px #667eea;
+            border-color: #5b74eb;
+            background: linear-gradient(180deg, #eef3ff 0%, #e8efff 100%);
+            box-shadow: 0 0 0 2px rgba(91, 116, 235, 0.35);
         }
         .coupon-btn .code {
             font-weight: 700;
             color: #667eea;
-            font-size: 1rem;
+            font-size: 1.05rem;
+            letter-spacing: 0.2px;
         }
         .coupon-btn .meta {
-            font-size: 0.8rem;
+            font-size: 0.95rem;
             color: #64748b;
-            margin-top: 0.25rem;
+            margin-top: 0.35rem;
+            line-height: 1.35;
         }
         .coupon-btn-none {
             border-style: dashed;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-container {
+                margin: 88px 0.75rem 1rem;
+                padding: 1rem;
+            }
+            .coupon-buttons-wrap {
+                grid-template-columns: 1fr;
+            }
+            .cart-item {
+                padding: 0.8rem;
+            }
         }
     </style>
 </head>

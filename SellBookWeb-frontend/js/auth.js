@@ -52,7 +52,7 @@ window.addEventListener('load', () => {
             return;
         }
 
-        if (currentPage === 'admin.html' && auth.getRole() !== 'ADMIN' && auth.getRole() !== 'SUPER_ADMIN') {
+        if (currentPage === 'admin.html' && auth.getRole() !== 'ADMIN') {
             window.location.href = 'customer.html';
         } else if (currentPage === 'customer.html' && auth.getRole() === 'ADMIN') {
             window.location.href = 'admin.html';
@@ -138,7 +138,7 @@ async function handleLogin(event) {
         auth.setAuth(user, data.accessToken);
         showToast(SUCCESS_MESSAGES.LOGIN_SUCCESS);
 
-        if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+        if (user.role === 'ADMIN') {
             window.location.href = 'admin.html';
         } else {
             window.location.href = 'customer.html';
