@@ -18,7 +18,7 @@
             <a href="#" onclick="showSection('users')">Người dùng</a>
             <a href="#" onclick="showSection('coupons')">Mã giảm giá</a>
             <a href="#" onclick="showSection('banks')">Ngân hàng</a>
-            <a href="#" onclick="showSection('suppliers')">Nhà cung cấp</a>
+            <a href="#" onclick="showSection('suppliers')">Nhà Xuất bản</a>
             <a href="#" onclick="showSection('purchaseOrders')">Phiếu nhập</a>
             <a href="#" onclick="showSection('reviews')">Duyệt đánh giá</a>
             <a href="#" onclick="logout()">Đăng xuất</a>
@@ -99,6 +99,7 @@
                         <tr>
                             <th>Mã đơn</th>
                             <th>Khách hàng</th>
+                            <th>Sách</th>
                             <th>Tổng tiền</th>
                             <th>Trạng thái</th>
                             <th>Ngày đặt</th>
@@ -174,8 +175,8 @@
 
         <section id="suppliers-section" class="section">
             <div class="section-header">
-                <h2>Quản lý nhà cung cấp</h2>
-                <button class="submit-btn" onclick="openSupplierModal()">Thêm nhà cung cấp</button>
+                <h2>Quản lý nhà xuất bản</h2>
+                <button class="submit-btn" onclick="openSupplierModal()">Thêm nhà xuất bản</button>
             </div>
             <div class="data-table">
                 <table id="suppliersTable">
@@ -204,7 +205,7 @@
                     <thead>
                         <tr>
                             <th>Mã phiếu</th>
-                            <th>Nhà cung cấp</th>
+                            <th>Nhà xuất bản</th>
                             <th>Số mặt hàng</th>
                             <th>Tổng tiền</th>
                             <th>Trạng thái</th>

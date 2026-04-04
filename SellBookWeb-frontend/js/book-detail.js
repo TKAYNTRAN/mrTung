@@ -35,8 +35,8 @@ function renderBookDetail(book) {
     document.getElementById('bookCategory').textContent = book.categoryId?.name || 'Chưa phân loại';
     
     // Publisher
-    if (book.publisher) {
-        document.getElementById('bookPublisher').textContent = book.publisher;
+    if (book.supplierName) {
+        document.getElementById('bookPublisher').textContent = book.supplierName;
         document.getElementById('publisherRow').style.display = 'block';
     } else {
         document.getElementById('publisherRow').style.display = 'none';

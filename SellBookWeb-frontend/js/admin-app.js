@@ -126,16 +126,18 @@ async function loadAdminOrders() {
         const tbody = document.querySelector('#ordersTable tbody');
 
         if (!data.orders || data.orders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Chưa có đơn hàng nào</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Chưa có đơn hàng nào</td></tr>';
             return;
         }
 
         tbody.innerHTML = data.orders.map(order => {
             const isLocked = order.status === 'CANCELLED' || order.status === 'DELIVERED';
+            const bookNames = order.items?.map(item => item.title).join(', ') || 'N/A';
             return `
             <tr>
                 <td>#${order._id.slice(-6)}</td>
                 <td>${order.userId?.name || order.userId?.email || 'N/A'}</td>
+                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${bookNames}">${bookNames}</td>
                 <td>${formatPrice(order.totalPrice)}</td>
                 <td><span class="badge badge-${order.status.toLowerCase()}">${formatStatus(order.status)}</span></td>
                 <td>${new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
@@ -237,6 +239,12 @@ async function openBookModal() {
         `<option value="${c._id}">${c.name}</option>`
     ).join('');
 
+    const suppliersData = await suppliersAPI.getAll(0, 200, true);
+    const suppliers = suppliersData.suppliers || [];
+    const supplierOptions = suppliers.map(s =>
+        `<option value="${s.name}">${s.name}</option>`
+    ).join('');
+
     document.getElementById('modalBody').innerHTML = `
         <h2>Thêm sách mới</h2>
         <form onsubmit="saveBook(event)">
@@ -259,6 +267,14 @@ async function openBookModal() {
             <div class="form-group">
                 <label>Danh mục:</label>
                 <select id="bookCategoryId" required>${categoryOptions}</select>
+            </div>
+            <div class="form-group">
+                <label>Nhà xuất bản:</label>
+                <select id="bookSupplierName">${supplierOptions}</select>
+            </div>
+            <div class="form-group">
+                <label>Mô tả:</label>
+                <textarea id="bookDescription" rows="4" placeholder="Nhập mô tả sách..."></textarea>
             </div>
             <div class="form-group">
                 <label>Ảnh bìa (URL):</label>
@@ -300,6 +316,8 @@ async function saveBook(event) {
         price: parseFloat(document.getElementById('bookPrice').value),
         quantity: parseInt(document.getElementById('bookQuantity').value),
         categoryId: document.getElementById('bookCategoryId').value,
+        supplierName: document.getElementById('bookSupplierName').value,
+        description: document.getElementById('bookDescription').value,
         image: document.getElementById('bookImage').value,
         active: true
     };
@@ -341,6 +359,12 @@ async function editBook(id) {
             `<option value="${c._id}" ${c._id === book.categoryId?._id ? 'selected' : ''}>${c.name}</option>`
         ).join('');
 
+        const suppliersData = await suppliersAPI.getAll(0, 200, true);
+        const suppliers = suppliersData.suppliers || [];
+        const supplierOptions = suppliers.map(s =>
+            `<option value="${s.name}" ${s.name === book.supplierName ? 'selected' : ''}>${s.name}</option>`
+        ).join('');
+
         document.getElementById('modalBody').innerHTML = `
             <h2>Sửa sách</h2>
             <form onsubmit="updateBook(event, '${id}')">
@@ -363,6 +387,14 @@ async function editBook(id) {
                 <div class="form-group">
                     <label>Danh mục:</label>
                     <select id="editBookCategoryId" required>${categoryOptions}</select>
+                </div>
+                <div class="form-group">
+                    <label>Nhà xuất bản:</label>
+                    <select id="editBookSupplierName">${supplierOptions}</select>
+                </div>
+                <div class="form-group">
+                    <label>Mô tả:</label>
+                    <textarea id="editBookDescription" rows="4" placeholder="Nhập mô tả sách...">${book.description || ''}</textarea>
                 </div>
                 <div class="form-group">
                     <label>Ảnh bìa (URL):</label>
@@ -392,6 +424,8 @@ async function updateBook(event, id) {
         price: parseFloat(document.getElementById('editBookPrice').value),
         quantity: parseInt(document.getElementById('editBookQuantity').value),
         categoryId: document.getElementById('editBookCategoryId').value,
+        supplierName: document.getElementById('editBookSupplierName').value,
+        description: document.getElementById('editBookDescription').value,
         image: document.getElementById('editBookImage').value,
         active: document.getElementById('editBookActive').value === 'true'
     };
@@ -1115,34 +1149,25 @@ async function loadAdminPurchaseOrders() {
 
 async function openPurchaseOrderModal() {
     try {
-        const [supplierData, bookData] = await Promise.all([
-            suppliersAPI.getAll(0, 200, true),
-            booksAPI.getAll(0, 500)
-        ]);
-
+        const supplierData = await suppliersAPI.getAll(0, 200, true);
         const suppliers = supplierData.suppliers || [];
-        const books = bookData.books || [];
 
         if (!suppliers.length) {
             showToast('Cần có ít nhất 1 nhà cung cấp đang hoạt động', 'warning');
             return;
         }
 
-        const supplierOptions = suppliers.map((s) => `<option value="${s._id}">${s.name}</option>`).join('');
-        const bookRows = books.map((b) => `
-            <tr>
-                <td>${b.title}</td>
-                <td><input type="number" min="0" value="0" id="poQty-${b._id}" style="width:90px"></td>
-                <td><input type="number" min="0" value="${b.price || 0}" id="poPrice-${b._id}" style="width:120px"></td>
-            </tr>
-        `).join('');
+        const supplierOptions = suppliers.map((s) => `<option value="${s._id}" data-name="${s.name}">${s.name}</option>`).join('');
 
         document.getElementById('modalBody').innerHTML = `
             <h2>Tạo phiếu nhập</h2>
             <form onsubmit="savePurchaseOrder(event)">
                 <div class="form-group">
                     <label>Nhà cung cấp</label>
-                    <select id="poSupplierId" required>${supplierOptions}</select>
+                    <select id="poSupplierId" required onchange="filterBooksBySupplier()">
+                        <option value="">Chọn nhà cung cấp</option>
+                        ${supplierOptions}
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Ngày dự kiến nhận</label>
@@ -1157,27 +1182,84 @@ async function openPurchaseOrderModal() {
                         <thead>
                             <tr><th>Sách</th><th>Số lượng</th><th>Đơn giá</th></tr>
                         </thead>
-                        <tbody>${bookRows}</tbody>
+                        <tbody id="poBookRows">
+                            <tr><td colspan="3" class="empty-state">Vui lòng chọn nhà cung cấp</td></tr>
+                        </tbody>
                     </table>
                 </div>
                 <button type="submit" class="submit-btn" style="margin-top:1rem;">Tạo phiếu nhập</button>
             </form>
         `;
         document.getElementById('modal').classList.add('show');
+        
+        // Load all books for filtering
+        const bookData = await booksAPI.getAll(0, 500);
+        window._poAllBooks = bookData.books || [];
+        window._poSuppliers = suppliers;
     } catch (error) {
         showToast(error.message, 'error');
     }
+}
+
+async function filterBooksBySupplier() {
+    const supplierId = document.getElementById('poSupplierId').value;
+    const tbody = document.getElementById('poBookRows');
+    
+    if (!supplierId) {
+        tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Vui lòng chọn nhà cung cấp</td></tr>';
+        return;
+    }
+    
+    // Find supplier name from ID
+    const supplier = window._poSuppliers?.find(s => s._id === supplierId);
+    const supplierName = supplier?.name;
+    
+    if (!supplierName) {
+        tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Không tìm thấy nhà cung cấp</td></tr>';
+        return;
+    }
+    
+    const books = window._poAllBooks || [];
+    const filteredBooks = books.filter(b => b.supplierName === supplierName);
+    
+    if (!filteredBooks.length) {
+        tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Không có sách nào từ nhà cung cấp này</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = filteredBooks.map((b) => `
+        <tr>
+            <td>${b.title}</td>
+            <td><input type="number" min="0" value="0" id="poQty-${b._id}" style="width:90px"></td>
+            <td><input type="number" min="0" value="${b.price || 0}" id="poPrice-${b._id}" style="width:120px"></td>
+        </tr>
+    `).join('');
 }
 
 async function savePurchaseOrder(event) {
     event.preventDefault();
 
     try {
-        const data = await booksAPI.getAll(0, 500);
-        const books = data.books || [];
+        const supplierId = document.getElementById('poSupplierId').value;
+        if (!supplierId) {
+            showToast('Vui lòng chọn nhà cung cấp', 'error');
+            return;
+        }
+        
+        // Find supplier name from ID
+        const supplier = window._poSuppliers?.find(s => s._id === supplierId);
+        const supplierName = supplier?.name;
+        
+        if (!supplierName) {
+            showToast('Không tìm thấy nhà cung cấp', 'error');
+            return;
+        }
+        
+        const books = window._poAllBooks || [];
+        const filteredBooks = books.filter(b => b.supplierName === supplierName);
         const items = [];
 
-        books.forEach((b) => {
+        filteredBooks.forEach((b) => {
             const qty = parseInt(document.getElementById(`poQty-${b._id}`)?.value || '0');
             const unitPrice = parseFloat(document.getElementById(`poPrice-${b._id}`)?.value || '0');
             if (qty > 0) {
@@ -1191,7 +1273,7 @@ async function savePurchaseOrder(event) {
         }
 
         const payload = {
-            supplierId: document.getElementById('poSupplierId').value,
+            supplierId: supplierId,
             expectedDate: document.getElementById('poExpectedDate').value || null,
             notes: document.getElementById('poNotes').value,
             items
